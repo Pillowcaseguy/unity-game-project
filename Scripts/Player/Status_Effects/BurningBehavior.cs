@@ -1,0 +1,46 @@
+using UnityEngine;
+
+public class BurningBehavior : MonoBehaviour
+{
+    public float lifetime = 0.1f;
+    public bool is_destroyed = false;
+    public GameObject owner = null;
+    public Transform transform;
+    public Animator ani;
+    void Awake()
+    {
+        transform = gameObject.transform;
+        ani = gameObject.GetComponent<Animator>();
+    }
+    public void Initialize(float life, GameObject owna)
+    {
+        lifetime = life;
+        owner = owna;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (owner == null)
+        {
+            return;
+        }
+
+        if (lifetime > 0f)
+        {
+            transform.position = owner.transform.position;
+            lifetime -= Time.deltaTime;
+        }
+
+        else if (lifetime < 0f && !is_destroyed)
+        {
+            is_destroyed = true;
+            ani.SetBool("is_destroyed", is_destroyed);
+        }
+
+        if (is_destroyed)
+        {
+            Destroy(gameObject, 0.3f);
+        }
+    }
+}
