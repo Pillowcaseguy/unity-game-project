@@ -1,8 +1,5 @@
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
-
 public class PlayerMovement : MonoBehaviour
 {
 
@@ -10,11 +7,11 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 5f;
 
     private Vector2 moveInput;
-    private Rigidbody2D rb;
+    public Rigidbody2D rb;
     private PlayerInput controls;
     private BoxCollider2D col;
     private Animator ani;
-    private SpriteRenderer sprite_render;
+    public SpriteRenderer sprite_render;
 
     private AnimatorOverrideController new_controller;
     private RuntimeAnimatorController original_controller;
@@ -264,7 +261,14 @@ public class PlayerMovement : MonoBehaviour
         if (context.started || context.performed)
         {
             attemptingMove = true;
-            attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
+            if (playerHealth.reverseTime > 0)
+            {
+                attemptedMove = new Vector2(context.ReadValue<Vector2>().x * -1, context.ReadValue<Vector2>().y);
+            }
+            else
+            {
+                attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
+            }
         }
         else if (context.canceled)
         {
