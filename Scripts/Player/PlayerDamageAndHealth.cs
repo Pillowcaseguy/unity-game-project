@@ -307,8 +307,13 @@ public class PlayerDamageAndHealth : MonoBehaviour
         lastHitType = type;
 
     }
-    private void Heal(int healAmount)
+    public void Heal(int healAmount)
     {
+        if (player_died) // Can't heal if dead
+        { 
+            return;
+        }
+
         if (health + healAmount > maximum_health)
         {
             health = maximum_health;
