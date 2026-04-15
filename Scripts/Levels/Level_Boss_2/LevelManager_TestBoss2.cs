@@ -36,6 +36,8 @@ public class LevelManager_TestBoss2 : MonoBehaviour
 
     public bool level_loading;
 
+    public GameObject spawn_point;
+
     // Update is called once per frame
     void Update()
     {
@@ -51,7 +53,7 @@ public class LevelManager_TestBoss2 : MonoBehaviour
             }
         }
 
-        if (player_life == null)
+        /*if (player_life == null)
         {
             var attempt = GameObject.FindWithTag("Player");
             
@@ -62,14 +64,23 @@ public class LevelManager_TestBoss2 : MonoBehaviour
                 player_life = player.GetComponent<PlayerDamageAndHealth>();
                 has_player = true;
             }
-        }
+        }*/
 
-        if (has_player)
+        /*if (has_player)
         {
             if (player.transform.position.y < -6)
             {
                 player.transform.position = new Vector2(-9, -3);
             }
+        }*/
+
+        if (player_life == null)
+        {
+            GameManager.Instance.playerUI.set_health_bar = false;
+            GameManager.Instance.instantiate_player(spawn_point.transform.position, 6, 6);
+            player = GameManager.Instance.current_player;
+            player_life = GameManager.Instance.player_health;
+            has_player = true;
         }
 
         if (has_boss && boss_life.phase == 1)

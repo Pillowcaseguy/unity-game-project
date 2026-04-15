@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
 {
-
     public GameObject boss;
     public TestBoss3_Phase3Behavior boss_life;
     public bool has_boss;
@@ -21,6 +20,8 @@ public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
     public GameObject BABY_BUNNY_debris;
 
     public bool dropping_debris = true;
+
+    public GameObject spawn_point;
 
     // Update is called once per frame
     void Update()
@@ -41,7 +42,13 @@ public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
 
         if (player_life == null)
         {
-            var attempt = GameObject.FindWithTag("Player");
+            GameManager.Instance.playerUI.set_health_bar = false;
+            int new_helf = GameManager.Instance.carryover_health == 0 ? 12 : GameManager.Instance.carryover_health;
+            GameManager.Instance.instantiate_player(spawn_point.transform.position, 12, new_helf);
+            player = GameManager.Instance.current_player;
+            player_life = GameManager.Instance.player_health;
+            has_player = true;
+            /*var attempt = GameObject.FindWithTag("Player");
 
             if (attempt != null)
             {
@@ -49,7 +56,8 @@ public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
                 player = attempt;
                 player_life = player.GetComponent<PlayerDamageAndHealth>();
                 has_player = true;
-            }
+            }*/
+            //GameManager.Instance.instantiate_player(spawn_point.transform.position,12,GameManager.Instance.carryover_health);
         }
 
         if (has_boss && has_player)

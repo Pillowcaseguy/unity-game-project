@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
 public class LevelManager_TestBoss1 : MonoBehaviour
 {
@@ -32,6 +31,8 @@ public class LevelManager_TestBoss1 : MonoBehaviour
 
     public bool level_loading = false;
 
+    public GameObject spawn_point;
+
     // Update is called once per frame
     void Update()
     {
@@ -46,7 +47,7 @@ public class LevelManager_TestBoss1 : MonoBehaviour
             }
         }
 
-        if (player_life == null)
+        /*if (player_life == null)
         {
             var attempt = GameObject.FindWithTag("Player");
 
@@ -57,6 +58,14 @@ public class LevelManager_TestBoss1 : MonoBehaviour
                 player_life = player.GetComponent<PlayerDamageAndHealth>();
                 has_player = true;
             }
+        }*/
+        if (player_life == null)
+        {
+            GameManager.Instance.playerUI.set_health_bar = false;
+            GameManager.Instance.instantiate_player(spawn_point.transform.position, 6, 6);
+            player = GameManager.Instance.current_player;
+            player_life = GameManager.Instance.player_health;
+            has_player = true;
         }
 
         if (current_foxman == null && !foxman_queued)

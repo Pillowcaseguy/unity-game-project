@@ -16,6 +16,8 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
 
     public bool level_loading;
 
+    public GameObject spawn_point;
+
     // Update is called once per frame
     void Update()
     {
@@ -33,7 +35,7 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
             }
         }
 
-        if (player_life == null)
+        /*if (player_life == null)
         {
             var attempt = GameObject.FindWithTag("Player");
             
@@ -44,6 +46,15 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
                 player_life = player.GetComponent<PlayerDamageAndHealth>();
                 has_player = true;
             }
+        }*/
+        if (player_life == null)
+        {
+            GameManager.Instance.playerUI.set_health_bar = false;
+            int new_helf = GameManager.Instance.carryover_health == 0 ? 12 : GameManager.Instance.carryover_health;
+            GameManager.Instance.instantiate_player(spawn_point.transform.position, 12, new_helf);
+            player = GameManager.Instance.current_player;
+            player_life = GameManager.Instance.player_health;
+            has_player = true;
         }
 
         if (has_boss && has_player)
@@ -53,6 +64,7 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
                 player_life.trueInvincibilityTime = 1f;
                 if (!level_loading)
                 {
+                    GameManager.Instance.carryover_health = player_life.health;
                     Invoke("load_next_level", 7f);
                     level_loading = true;
                 }
@@ -62,7 +74,7 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
             {
                 if (!level_loading)
                 {
-                    Invoke("load_next_level", 5f);
+                    Invoke("load_menu", 5f);
                     level_loading = true;
                 }
             }
@@ -71,5 +83,9 @@ public class LevelManager_TestBoss3_Phase2 : MonoBehaviour
     public void load_next_level()
     {
         SceneManager.LoadScene("TestBoss3_Phase3");
+    }
+    public void load_menu()
+    {
+        SceneManager.LoadScene("Main Menu");
     }
 }
