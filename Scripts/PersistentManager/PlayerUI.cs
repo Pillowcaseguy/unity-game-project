@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 using static PlayerAttacking;
 
@@ -16,6 +15,7 @@ public class PlayerUI : MonoBehaviour
     public GameObject portrait_mouth;
     public GameObject fire_in_portrait;
     public GameObject weapon_portrait;
+    public GameObject secondary_weapon_portrait;
 
     public Image bg_bar;
     public Image bg_sq;
@@ -25,6 +25,7 @@ public class PlayerUI : MonoBehaviour
     public Image mouth;
 
     public Image weapon_type;
+    public Image secondary_weapon_type;
 
     public Sprite normal_eye;
     public Sprite big_eye;
@@ -71,6 +72,7 @@ public class PlayerUI : MonoBehaviour
         health_bar_t = health_bar.GetComponent<RectTransform>();
         health_fill_t = health_fill.GetComponent<RectTransform>();
         weapon_type = weapon_portrait.GetComponent<Image>();
+        secondary_weapon_type = secondary_weapon_portrait.GetComponent<Image>();
     }
 
     public void updatePortrait(PlayerDamageAndHealth player_health)
@@ -90,7 +92,7 @@ public class PlayerUI : MonoBehaviour
         final_right_eye = roll_right_eye(player_health, health_ratio);
         final_mouth = roll_mouth(player_health, health_ratio);
 
-        if (player_health.weaknessTime > 0 && !portrait_left_eye_bag.activeSelf)
+        /*if (player_health.weaknessTime > 0 && !portrait_left_eye_bag.activeSelf)
         {
             portrait_left_eye_bag.SetActive(true);
         }
@@ -106,7 +108,7 @@ public class PlayerUI : MonoBehaviour
         else if (player_health.weaknessTime <= 0 && portrait_right_eye_bag.activeSelf)
         {
             portrait_right_eye_bag.SetActive(false);
-        }
+        }*/
 
         if (player_health.burnTime > 0 && !fire_in_portrait.activeSelf)
         {
@@ -123,97 +125,6 @@ public class PlayerUI : MonoBehaviour
         left_eye.sprite = final_left_eye;
         right_eye.sprite = final_right_eye;
         mouth.sprite = final_mouth;
-
-        /*if (player_health.burnTime > 0)
-        {
-            left_eye.sprite = big_eye;
-            right_eye.sprite = big_eye;
-            mouth.sprite = very_sad_mouth;
-            bg_sq.color = Color.orange;
-        }
-
-        else
-        {
-            if (right_eye.sprite.name.Equals("big_eye"))
-            {
-                left_eye.sprite = big_eye;
-                right_eye.sprite = big_eye;
-            }
-
-            mouth.sprite = sad_mouth;
-
-            if (bg_sq.color != Color.white)
-            {
-                bg_sq.color = Color.white;
-            }
-        }
-
-        if (player_health.curseTime > 0)
-        {
-            if (bg_sq.color != Color.white)
-            {
-                bg_sq.color = Color.mediumPurple;
-            }
-            head.sprite = cursed_head;
-        }
-
-        else
-        {
-            if (head.sprite.name.Equals("cursed_head"))
-            {
-                head.sprite = normal_head;
-            }
-        }
-
-        if (player_health.freezeTime > 0)
-        {
-            if (bg_sq.color != Color.white)
-            {
-                bg_sq.color = Color.lightBlue;
-            }
-            mouth.sprite = sad_mouth;
-        }
-
-        if (player_health.stunTime > 0)
-        {
-            left_eye.sprite = x_eye;
-            right_eye.sprite = x_eye;
-            mouth.sprite = sad_mouth;
-        }
-
-        if (player_health.blindTime > 0)
-        {
-            left_eye.sprite = white_eye;
-            right_eye.sprite = white_eye;
-            bool very_sad = mouth.sprite.name.Equals("very_sad_mouth") ? true : false;
-            if (!very_sad)
-            {
-                mouth.sprite = sad_mouth;
-            }
-        }*/
-
-        /*if (health_ratio > 0.5)
-        {
-
-        }
-
-        if (health_ratio <= 0.5)
-        {
-
-            if (health_ratio <= 0.375)
-            {
-                left_eye.sprite = injured_eye;
-                mouth.sprite = sad_mouth;
-            }
-
-            if (player_health.health == 0)
-            {
-                left_eye.sprite = x_eye;
-                right_eye.sprite = x_eye;
-                mouth.sprite = sad_mouth;
-            }
-
-        }*/
 
     }
     public Color roll_bar(PlayerDamageAndHealth h)
@@ -293,7 +204,7 @@ public class PlayerUI : MonoBehaviour
             return big_eye;
         }
 
-        if (h.slowTime > 0)
+        if (h.slowTime > 0 || h.weaknessTime > 0)
         {
             return slow_eye;
         }
@@ -334,7 +245,7 @@ public class PlayerUI : MonoBehaviour
             return big_eye;
         }
 
-        if (h.slowTime > 0)
+        if (h.slowTime > 0 || h.weaknessTime > 0)
         {
             return slow_eye;
         }
@@ -451,6 +362,40 @@ public class PlayerUI : MonoBehaviour
             weapon_type.sprite = weapon_ice;
         }
 
-    }
+        PlayerAttacking.WeaponType y = weapon.lastWeapon;
 
+        if (y == WeaponType.Ice)
+        {
+            secondary_weapon_type.sprite = weapon_ice;
+        }
+        else if (y == WeaponType.Fire)
+        {
+            secondary_weapon_type.sprite = weapon_fire;
+        }
+        else if (y == WeaponType.Gem)
+        {
+            secondary_weapon_type.sprite = weapon_gem;
+        }
+        else if (y == WeaponType.Earth)
+        {
+            secondary_weapon_type.sprite = weapon_earth;
+        }
+        else if (y == WeaponType.Water)
+        {
+            secondary_weapon_type.sprite = weapon_water;
+        }
+        else if (y == WeaponType.Light)
+        {
+            secondary_weapon_type.sprite = weapon_light;
+        }
+        else if (y == WeaponType.Dark)
+        {
+            secondary_weapon_type.sprite = weapon_dark;
+        }
+        else
+        {
+            secondary_weapon_type.sprite = weapon_ice;
+        }
+
+    }
 }
