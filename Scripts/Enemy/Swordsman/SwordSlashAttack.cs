@@ -4,7 +4,6 @@ public class SwordSlashAttack : MonoBehaviour
 {
 
     private BoxCollider2D col;
-    private Transform transform;
     private GameObject parentObj;
     private SwordsmanAI myAI;
     private float rotLowerLimit = 45f;
@@ -19,7 +18,6 @@ public class SwordSlashAttack : MonoBehaviour
     void Start()
     {
         col = GetComponent<BoxCollider2D>();
-        transform = GetComponent<Transform>();
         parentObj = transform.parent.gameObject;
         attackControl = GetComponent<EnemyAttack>();
         myAI = parentObj.GetComponent<SwordsmanAI>();
@@ -28,7 +26,7 @@ public class SwordSlashAttack : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    /*void Update()
     {
         if (myAI.attackTimer > 0)
         {
@@ -54,5 +52,14 @@ public class SwordSlashAttack : MonoBehaviour
             attackControl.disableAttackCycle = false;
         }
         //Debug.Log(parentObj.name);
+    }*/
+    public void start_attack()
+    {
+        attackControl.EnableHitbox();
+    }
+    public void end_attack()
+    {
+        attackControl.DisableHitbox();
+        attackControl.disableAttackCycle = false;
     }
 }

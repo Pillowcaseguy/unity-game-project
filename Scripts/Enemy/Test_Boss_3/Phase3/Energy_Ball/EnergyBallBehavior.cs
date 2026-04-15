@@ -21,8 +21,8 @@ public class EnergyBallBehavior : MonoBehaviour
     {
         if (((1 << col.gameObject.layer) & groundLayer) != 0)
         {
-            GameObject thing = Instantiate(impact,transform.position,Quaternion.Euler(0,0,0));
-            Destroy(thing,1f);
+            GameObject thing = Instantiate(impact,new Vector2(transform.position.x,-3f),Quaternion.Euler(0,0,0));
+            Destroy(thing,0.5f);
             Destroy(gameObject);
         }
     }

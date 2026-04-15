@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 public class SmallHotDogBehavior : MonoBehaviour
 {
@@ -33,6 +32,8 @@ public class SmallHotDogBehavior : MonoBehaviour
     public LayerMask playerLayer;
     public LayerMask combinedLayer;
 
+    public LevelManager_TestBoss1 levelManager;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -64,6 +65,14 @@ public class SmallHotDogBehavior : MonoBehaviour
             return;
         }
 
+        if (levelManager == null)
+        {
+            LevelManager_TestBoss1 attempt = GameObject.Find("LevelManager").GetComponent<LevelManager_TestBoss1>();
+            if (attempt != null)
+            {
+                levelManager = attempt;
+            }
+        }
         current_height_since_creation = transform.position.y - starting_y;
 
         if (current_phase == 0)
@@ -113,7 +122,6 @@ public class SmallHotDogBehavior : MonoBehaviour
 
         if (current_phase == 3)
         {
-            Transform playerAttempt = GameObject.Find("Player").GetComponent<Transform>();
 
             if (time_since_phase_3 == 0)
             {
@@ -131,7 +139,7 @@ public class SmallHotDogBehavior : MonoBehaviour
             }
             else
             {
-                transform.position = (playerAttempt == null) ? new Vector2(0f, transform.position.y) : new Vector2(playerAttempt.position.x, transform.position.y);
+                transform.position = (levelManager == null || !levelManager.has_player) ? new Vector2(0f, transform.position.y) : new Vector2(levelManager.player.transform.position.x, transform.position.y);
             }
         }
 
@@ -189,7 +197,7 @@ public class SmallHotDogBehavior : MonoBehaviour
     void explode()
     {
         pofff.show_sprite(false);
-        cameraShake.shakeOnHurt(1.8f);
+        cameraShake.shakeOnHurt(1.5f);
         Instantiate(explosion,new Vector2(transform.position.x,transform.position.y - 1.2f),Quaternion.Euler(0,0,0));
         rb.linearVelocityY = 0;
         sprite.enabled = false;

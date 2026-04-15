@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class SideBuildingBehavior : MonoBehaviour,EnemyDamageable
@@ -84,7 +85,7 @@ public class SideBuildingBehavior : MonoBehaviour,EnemyDamageable
         if (!boss_is_on)
         {
             player_attack.isHit();
-            TakeDamage(1);
+            TakeDamage(player_attack.damage / 2);
         }
         else
         {

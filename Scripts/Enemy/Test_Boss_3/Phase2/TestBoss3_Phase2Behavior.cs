@@ -148,6 +148,10 @@ public class TestBoss3_Phase2Behavior : MonoBehaviour,EnemyDamageable
 
             if (laser_cooldown <= 0f)
             {
+                if (flip_cooldown < 0.5f)
+                {
+                    flip_everything(!sprite.flipX);
+                }
                 laser_cooldown = Random.Range(15f,25f);
                 ani.SetBool("is_shooting", true);
                 made_a_move = true;
@@ -172,6 +176,10 @@ public class TestBoss3_Phase2Behavior : MonoBehaviour,EnemyDamageable
             }
             else if (spikes_attack_hittable)
             {
+                if (flip_cooldown < 0.5f)
+                {
+                    flip_everything(!sprite.flipX);
+                }
                 ani.SetBool("is_pushing", true);
                 made_a_move = true;
             }

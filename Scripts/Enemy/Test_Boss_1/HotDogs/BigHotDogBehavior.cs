@@ -17,13 +17,11 @@ public class BigHotDogBehavior : MonoBehaviour
     public Sprite multiple_sprite;
 
     private SpriteRenderer sprite;
-    private Transform transform;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
-        transform = GetComponent<Transform>();
     }
 
     // Update is called once per frame

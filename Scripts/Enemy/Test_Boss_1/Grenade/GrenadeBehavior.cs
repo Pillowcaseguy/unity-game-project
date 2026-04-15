@@ -25,7 +25,6 @@ public class GrenadeBehavior : MonoBehaviour
 
     private Rigidbody2D rb;
     private BoxCollider2D box;
-    private Transform transform;
 
     LayerMask playerLayer;
     LayerMask groundLayer;
@@ -34,7 +33,6 @@ public class GrenadeBehavior : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
-        transform = GetComponent<Transform>();
 
         playerLayer = LayerMask.GetMask("Player_Damage","Player");
         groundLayer = LayerMask.GetMask("Ground");

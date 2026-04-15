@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnemyAttack : MonoBehaviour
 {
     private BoxCollider2D col;
-    private Animator ani;
+    public Animator ani;
     private SpriteRenderer sprite_render;
 
     private int active_layer;
@@ -52,7 +52,7 @@ public class EnemyAttack : MonoBehaviour
     }
     private void OnTriggerStay2D(Collider2D col)
     {
-        if ((gameObject.layer) != active_layer) // If the layer this object is not the active attack layer return
+        if (gameObject.layer != active_layer) // If the layer this object is not the active attack layer return
         {
             return;
         }

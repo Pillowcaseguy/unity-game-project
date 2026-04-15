@@ -155,8 +155,8 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
 
         if (energy_shot >= 12)
         {
-            end_super_attack();
             energy_shot = 0;
+            end_super_attack();
         }
 
         if (current_diving_boss != null)
@@ -222,7 +222,7 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
 
             if (super_attack_cooldown <= 0f)
             {
-                super_attack_cooldown = 60f;
+                super_attack_cooldown = 45f;
 
                 int random = Random.Range(0, 3);
 
@@ -294,7 +294,6 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
                         super_attack_laser = 0;
                     }
                 }
-
                 start_super_attack();
                 ani.SetInteger("current_super_attack", current_super_attack);
                 ani.SetBool("is_super_attacking", true);
@@ -304,19 +303,25 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
 
             else if (laser_cooldown <= 0f)
             {
-                laser_cooldown = Random.Range(15f, 25f);
+                laser_cooldown = Random.Range(15f, 20f);
                 ani.SetBool("is_shooting", true);
                 made_a_move = true;
             }
             else if (panel_cooldown <= 0f)
             {
-                panel_cooldown = Random.Range(15f, 20f);
+                panel_cooldown = Random.Range(20f, 25f);
                 ani.SetBool("is_raising", true);
+                made_a_move = true;
+            }
+            else if (blind_cooldown <= 0f)
+            {
+                blind_cooldown = Random.Range(15f, 20f);
+                ani.SetBool("is_flashing", true);
                 made_a_move = true;
             }
             else if (crate_cooldown <= 0f)
             {
-                crate_cooldown = Random.Range(15f, 20f);
+                crate_cooldown = Random.Range(12f, 18f);
                 ani.SetBool("is_slamming", true);
                 made_a_move = true;
             }
@@ -326,14 +331,12 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
                 ani.SetBool("is_electrifying", true);
                 made_a_move = true;
             }
-            else if (blind_cooldown <= 0f)
-            {
-                blind_cooldown = Random.Range(12f, 18f);
-                ani.SetBool("is_flashing", true);
-                made_a_move = true;
-            }
             else if (spikes_attack_hittable)
             {
+                if (flip_cooldown < 0.5f)
+                {
+                    flip_everything(!sprite.flipX);
+                }
                 ani.SetBool("is_pushing", true);
                 made_a_move = true;
             }
@@ -440,14 +443,26 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
     }
     public bool query_flipping()
     {
-        if (ani.GetBool("is_shooting") || ani.GetBool("is_super_attacking"))
+        if (ani.GetBool("is_shooting"))
         {
             return true;
+        }
+        if (ani.GetBool("is_super_attacking"))
+        {
+            if (current_super_attack == 0)
+            {
+                return true;
+            }
         }
         return false;
     }
     public void reduce_timers(float f)
     {
+        /*if (is_attacking)
+        {
+            f /= 2.0f;
+        }*/
+
         laser_cooldown -= f;
         if (laser_cooldown <= 0f)
         {
@@ -478,11 +493,14 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
             crate_cooldown = 0f;
         }
 
-        shield_creation_cooldown -= f;
-        if (shield_creation_cooldown <= 0f && !super_attacking)
+        if (!super_attacking)
         {
-            create_shield();
-            shield_creation_cooldown = 40f;
+            shield_creation_cooldown -= f;
+            if (shield_creation_cooldown <= 0f)
+            {
+                create_shield();
+                shield_creation_cooldown = 40f;
+            }
         }
 
         if (!super_attacking)
@@ -533,7 +551,7 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
             shield_bubble_behavior.sprite.enabled = true;
         }
         weak_field.override_show = false;
-        sprite.color = Color.white;
+        //sprite.color = Color.white;
 
         ani.SetBool("is_pushing", false);
         ani.SetBool("is_flashing", false);
@@ -558,10 +576,10 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
     }
     public void start_throwing_panel()
     {
-        ground_panel_behavior_left = Instantiate(ground_panel_left, new Vector2(transform.position.x - 2.0f, -6.0f), Quaternion.Euler(0, 0, 0)).GetComponent<GroundPanelBehavior_P3>();
+        ground_panel_behavior_left = Instantiate(ground_panel_left, new Vector2(transform.position.x - 2.0f, -6.5f), Quaternion.Euler(0, 0, 0)).GetComponent<GroundPanelBehavior_P3>();
         ground_panel_behavior_left.the_boss = this;
         ground_panel_behavior_left.left = true;
-        ground_panel_behavior_right = Instantiate(ground_panel_right, new Vector2(transform.position.x + 2.0f, -6.0f), Quaternion.Euler(0, 0, 0)).GetComponent<GroundPanelBehavior_P3>();
+        ground_panel_behavior_right = Instantiate(ground_panel_right, new Vector2(transform.position.x + 2.0f, -6.5f), Quaternion.Euler(0, 0, 0)).GetComponent<GroundPanelBehavior_P3>();
         ground_panel_behavior_right.the_boss = this;
         ground_panel_behavior_right.left = false;
     }
@@ -770,39 +788,42 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
             {
                 transform.position = new Vector2(transform.position.x, -3.6f);
             }
+            ani.SetBool("is_super_attacking", false);
+            ani.SetBool("ending_super_attack", true);
+            sprite.color = Color.white;
         }
 
         else if (current_super_attack == 1)
         {
-            Instantiate(afterimage, transform.position, Quaternion.Euler(0, 0, 0));
-            transform.position = new Vector2(transform.position.x, -3.6f);
+            Invoke("kill_energy", 1f);
+            ani.SetBool("is_super_attacking", false);
+            ani.SetBool("ending_super_attack", true);
         }
 
         else if (current_super_attack == 2)
         {
             Instantiate(afterimage, transform.position, Quaternion.Euler(0, 0, 0));
             transform.position = new Vector2(transform.position.x, -3.6f);
+            ani.SetBool("is_super_attacking", false);
+            ani.SetBool("ending_super_attack", true);
+            sprite.color = Color.white;
         }
-        ani.SetBool("is_super_attacking", false);
-        ani.SetBool("ending_super_attack", true);
     }
-    /*public void check_clip(int angle)
+    public void kill_energy()
     {
-        if (angle < 90)
-        {
-
-        }
-    }*/
+        Instantiate(afterimage, transform.position, Quaternion.Euler(0, 0, 0));
+        transform.position = new Vector2(transform.position.x, -3.6f);
+        sprite.color = Color.white;
+    }
     public void create_energy_ball()
     {
-        int the_angle = Random.Range(224, 316);
-        //check_clip(the_angle);
+        int the_angle = Random.Range(210, 325);
         energy_shot += 1;
         Instantiate(energy_ball, transform.position, Quaternion.Euler(0, 0, the_angle));
     }
     public void do_dive()
     {
-        float the_angle = Mathf.Atan2(-10,level_manager_behavior.player.transform.position.x - gameObject.transform.position.x) * Mathf.Rad2Deg + 360;
+        float the_angle = Mathf.Atan2(-10,level_manager_behavior.player.transform.position.x - gameObject.transform.position.x) * Mathf.Rad2Deg;
         current_diving_boss = Instantiate(diving_boss, transform.position, Quaternion.Euler(0, 0, the_angle));
         diving_boss_behavior = current_diving_boss.GetComponent<DivingBossBehavior>();
     }

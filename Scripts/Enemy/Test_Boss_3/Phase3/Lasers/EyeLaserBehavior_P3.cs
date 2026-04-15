@@ -70,24 +70,47 @@ public class EyeLaserBehavior_P3 : MonoBehaviour
             float z = gameObject.transform.rotation.eulerAngles.z;
             if (facing_left)
             {
-                if (z > 0)
+                if (!flipped_once)
                 {
-                    gameObject.transform.Rotate(0, 0, -3);
-                    if (gameObject.transform.rotation.eulerAngles.z > 350)
+                    gameObject.transform.Rotate(0, 0, -2f);
+
+                    if (z > 0)
                     {
-                        gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+                        if (gameObject.transform.rotation.eulerAngles.z > 350)
+                        {
+                            gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+                        }
+                    }
+                    else
+                    {
+                        finished_loop = true;
                     }
                 }
                 else
                 {
-                    finished_loop = true;
+
+                    if (z < 180)
+                    {
+                        gameObject.transform.Rotate(0, 0, 2f);
+                    }
+                    else
+                    {
+                        finished_loop = true;
+                    }
                 }
             }
             else
             {
                 if (z < 180)
                 {
-                    gameObject.transform.Rotate(0, 0, 3);
+                    if (flipped_once)
+                    {
+                        gameObject.transform.Rotate(0, 0, -2f);
+                    }
+                    else
+                    {
+                        gameObject.transform.Rotate(0, 0, 2f);
+                    }
                 }
                 else
                 {
@@ -124,11 +147,25 @@ public class EyeLaserBehavior_P3 : MonoBehaviour
         can_hurt_player = true;
         if (facing_left)
         {
-            gameObject.transform.rotation = Quaternion.Euler(0, 0, 95);
+            if (flipped_once)
+            {
+                gameObject.transform.rotation = Quaternion.Euler(0, 0, 95);
+            }
+            else
+            {
+                gameObject.transform.rotation = Quaternion.Euler(0, 0, 85);
+            }
         }
         else
         {
-            gameObject.transform.rotation = Quaternion.Euler(0, 0, 85);
+            if (flipped_once)
+            {
+                gameObject.transform.rotation = Quaternion.Euler(0, 0, 85);
+            }
+            else
+            {
+                gameObject.transform.rotation = Quaternion.Euler(0, 0, 95);
+            }
         }
     }
     private void OnTriggerEnter2D(Collider2D col)

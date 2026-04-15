@@ -1,6 +1,7 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class SwordsmanAI : MonoBehaviour
+public class SwordsmanAI : MonoBehaviour,EnemyDamageable
 {
 
     public bool isStanding = false;
@@ -11,49 +12,46 @@ public class SwordsmanAI : MonoBehaviour
     public float deathTimer;
 
     private BoxCollider2D col;
-    private Transform transform;
     private Animator ani;
-    private EnemyHealth enemyHealth;
+    private SpriteRenderer sprite;
+    private SwordSlashAttack swash;
 
-    //Temp
-    private bool shutup = false;
+    public int max_health;
+    public int health;
+
+    public float damage_color_cooldown;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         isStanding = true;
         col = GetComponent<BoxCollider2D>();
-        transform = GetComponent<Transform>();
         ani = GetComponent<Animator>();
-        enemyHealth = GetComponent<EnemyHealth>();
+        sprite = GetComponent<SpriteRenderer>();
+        swash = GetComponentInChildren<SwordSlashAttack>();
+        max_health = 100;
+        health = max_health;
         timeSinceLastAttack = 0f;
+        damage_color_cooldown = 0.15f;
     }
-
     // Update is called once per frame
     void Update()
     {
         
-        if (!enemyHealth.isDead)
+        if (health > 0)
         {
             if (!isAttacking)
             {
 
-                /*if (timeSinceLastAttack > 4.0f && !shutup)
-                {
-                    Debug.Log("WILL ATTACK IN A SECOND!");
-                    shutup = true;
-                }*/
-
                 if (timeSinceLastAttack > 5.0f)
                 {
-                    isAttacking = true;
-                    isStanding = false;
-                    attackTimer = 0.5f;
+                    startAttacking();
+                    //attackTimer = 0.5f;
                 }
 
             }
 
-            if (attackTimer > 0f)
+            /*if (attackTimer > 0f)
             {
 
                 attackTimer -= Time.deltaTime;
@@ -63,28 +61,68 @@ public class SwordsmanAI : MonoBehaviour
                     attackTimer = 0f;
                 }
 
-            }
+            }*/
 
-            if (attackTimer == 0f && isAttacking)
+            /*if (attackTimer == 0f && isAttacking)
             {
                 stopAttacking();
-            }
+            }*/
 
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+        if (sprite.color != Color.white)
+        {
+            damage_color_cooldown -= Time.deltaTime;
+            if (damage_color_cooldown <= 0f)
+            {
+                damage_color_cooldown = 0.15f;
+                sprite.color = Color.white;
+            }
         }
 
         timeSinceLastAttack += Time.deltaTime;
 
         ani.SetBool("isStanding", isStanding);
         ani.SetBool("isAttacking", isAttacking);
-        ani.SetBool("isDead", enemyHealth.isDead);
+        //ani.SetBool("isDead", health > 0);
 
     }
-    void stopAttacking()
+    public void stopAttacking()
     {
         isAttacking = false;
         isStanding = true;
         timeSinceLastAttack = 0f;
-        //shutup = false;
+        end_slash();
+    }
+    public void startAttacking()
+    {
+        isAttacking = true;
+        isStanding = false;
+    }
+    public void start_slash()
+    {
+        swash.start_attack();
+    }
+    public void end_slash()
+    {
+        swash.end_attack();
+    }
+    public void TakeDamage(int damage)
+    {
+        if (health > 0)
+        {
+            health -= damage;
+            sprite.color = new Color(1, 1, 1, 0.5f);
+        }
     }
 
+    public void Hit(PlayerAttack player_attack)
+    {
+        player_attack.isHit();
+        TakeDamage(player_attack.damage);
+    }
 }

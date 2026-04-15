@@ -29,7 +29,7 @@ public class TestBoss1Behavior : MonoBehaviour, EnemyDamageable
     public bool is_kicking;
 
     public int health;
-    public int starting_health = 1500;
+    public int starting_health = 1800;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

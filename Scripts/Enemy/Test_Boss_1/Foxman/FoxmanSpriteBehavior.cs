@@ -4,7 +4,6 @@ public class FoxmanSpriteBehavior : MonoBehaviour
 {
 
     private FoxmanBehavior FOXMAN;
-    private Transform transform;
     private SpriteRenderer sprite;
     private BoxCollider2D box;
 
@@ -14,7 +13,6 @@ public class FoxmanSpriteBehavior : MonoBehaviour
     void Start()
     {
         FOXMAN = GetComponentInParent<FoxmanBehavior>();
-        transform = GetComponent<Transform>();
         sprite = GetComponent<SpriteRenderer>();
         box = GetComponentInParent<BoxCollider2D>();
     }

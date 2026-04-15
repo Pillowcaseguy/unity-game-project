@@ -4,7 +4,6 @@ public class SmallHotDogShadow : MonoBehaviour
 {
 
     private SmallHotDogBehavior HEHHH;
-    private Transform transform;
     private Transform parent_transform;
     private SpriteRenderer sprite;
     private BoxCollider2D col;
@@ -24,7 +23,6 @@ public class SmallHotDogShadow : MonoBehaviour
     void Start()
     {
         HEHHH = GetComponentInParent<SmallHotDogBehavior>();
-        transform = GetComponent<Transform>();
         parent_transform = HEHHH.GetComponent<Transform>();
         sprite = GetComponent<SpriteRenderer>();
         col = GetComponentInParent<BoxCollider2D>();

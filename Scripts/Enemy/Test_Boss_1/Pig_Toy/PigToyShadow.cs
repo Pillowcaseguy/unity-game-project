@@ -4,7 +4,6 @@ public class PigToyShadow : MonoBehaviour
 {
 
     private PigToy hwoh;
-    private Transform transform;
     private Transform parent_transform;
     private SpriteRenderer sprite;
 
@@ -12,7 +11,6 @@ public class PigToyShadow : MonoBehaviour
     void Start()
     {
         hwoh = GetComponentInParent<PigToy>();
-        transform = GetComponent<Transform>();
         parent_transform = hwoh.GetComponent<Transform>();
         sprite = GetComponent<SpriteRenderer>();
         transform.SetParent(null);

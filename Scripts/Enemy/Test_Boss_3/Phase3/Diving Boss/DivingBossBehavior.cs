@@ -8,6 +8,13 @@ public class DivingBossBehavior : MonoBehaviour
     public int speed = 1;
     public SpriteRenderer sprite;
     public GameObject impact;
+    public Animator child_ani;
+    public SpriteRenderer child_sprite;
+    private void Awake()
+    {
+        child_ani = GetComponentInChildren<Animator>();
+        child_sprite = child_ani.gameObject.GetComponent<SpriteRenderer>();
+    }
     void Start()
     {
         hit_ground = false;
@@ -18,9 +25,16 @@ public class DivingBossBehavior : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (transform.rotation.z > 180)
+        float wangle = transform.rotation.eulerAngles.z % 360;
+        if (wangle > 180 && wangle < 270)
         {
             sprite.flipY = true;
+            child_sprite.flipY = true;
+        }
+        else
+        {
+            sprite.flipY = false;
+            child_sprite.flipY = false;
         }
 
         if (!hit_ground)
@@ -36,7 +50,7 @@ public class DivingBossBehavior : MonoBehaviour
     }
     public void finish_dive()
     {
-        GameObject hi = Instantiate(impact,transform.position,Quaternion.Euler(0,0,0));
+        GameObject hi = Instantiate(impact,new Vector2(transform.position.x,-3f),Quaternion.Euler(0,0,0));
         Destroy(hi, 1);
         Destroy(gameObject);
     }

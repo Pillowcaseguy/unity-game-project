@@ -5,7 +5,6 @@ public class SadBombBehavior : MonoBehaviour, EnemyDamageable
 
     private Rigidbody2D rb;
     private BoxCollider2D box;
-    private Transform transform;
 
     public float starting_x;
     public float starting_y;
@@ -56,7 +55,6 @@ public class SadBombBehavior : MonoBehaviour, EnemyDamageable
     }
     void Start()
     {
-        transform = gameObject.GetComponent<Transform>();
         rb = gameObject.GetComponent<Rigidbody2D>();
         box = gameObject.GetComponent<BoxCollider2D>();
         starting_x = transform.position.x;

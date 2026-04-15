@@ -1,14 +1,23 @@
 using UnityEngine;
 
-public class SwordIdleAttack : MonoBehaviour
+public class SwordIdleAttack : MonoBehaviour,EnemyDamageable
 {
 
     private BoxCollider2D col;
-    private Transform transform;
     private GameObject parentObj;
     private SwordsmanAI myAI;
 
     private EnemyAttack attackControl;
+
+    public void Hit(PlayerAttack player_attack)
+    {
+        player_attack.isHit();
+    }
+
+    public void TakeDamage(int damage)
+    {
+        return;
+    }
 
     //private int active_layer;
     //private int inactive_layer;
@@ -17,7 +26,6 @@ public class SwordIdleAttack : MonoBehaviour
     void Start()
     {
         col = GetComponent<BoxCollider2D>();
-        transform = GetComponent<Transform>();
         parentObj = transform.parent.gameObject;
         attackControl = GetComponent<EnemyAttack>();
         myAI = parentObj.GetComponent<SwordsmanAI>();

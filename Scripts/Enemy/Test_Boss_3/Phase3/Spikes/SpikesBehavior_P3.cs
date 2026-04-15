@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SpikesBehavior_P3 : MonoBehaviour
+public class SpikesBehavior_P3 : MonoBehaviour,EnemyDamageable
 {
     public SpriteRenderer sprite;
     public BoxCollider2D box;
@@ -67,5 +67,14 @@ public class SpikesBehavior_P3 : MonoBehaviour
     public void destroy()
     {
         Destroy(gameObject);
+    }
+    public void TakeDamage(int damage)
+    {
+        
+    }
+
+    public void Hit(PlayerAttack player_attack)
+    {
+        player_attack.isHit();
     }
 }

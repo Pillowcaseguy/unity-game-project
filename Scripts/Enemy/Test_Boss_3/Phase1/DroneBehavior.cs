@@ -56,7 +56,7 @@ public class DroneBehavior : MonoBehaviour,EnemyDamageable
 
         if (move_time <= 0 && stop_time <= 0)
         {
-            move_time = 2.0f;
+            move_time = Random.Range(1.5f, 2f);
             current_goal = player.transform.position;
         }
 
@@ -74,7 +74,7 @@ public class DroneBehavior : MonoBehaviour,EnemyDamageable
             stop_time -= Time.deltaTime;
             if (stop_time <= 0)
             {
-                move_time = 2.0f;
+                move_time = Random.Range(1.5f,2f);
                 current_goal = player.transform.position;
             }
         }
