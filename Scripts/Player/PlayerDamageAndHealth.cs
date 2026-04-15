@@ -15,6 +15,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public float hurtTime = 0f;
     public float parryTime = 0f;
     public float parryCooldown = 0f;
+    public float maxParryCooldown = 10f;
     public float weaponSwitchCooldown = 0f;
     public float invincibilityTime = 0f;
     private float hiddenInvincibilityTime = 0f;
@@ -61,17 +62,17 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public LayerMask pitLayer;
     void Awake()
     {
-        health = maximum_health;
+        movement = GetComponent<PlayerMovement>();
+        player_attacking = GetComponent<PlayerAttacking>();
     }
 
     void Start()
     {
+        //health = maximum_health;
         rb = GetComponent<Rigidbody2D>();
         sprite_render = GetComponent<SpriteRenderer>();
         col = GetComponent<BoxCollider2D>();
         ani = GetComponent<Animator>();
-        movement = GetComponent<PlayerMovement>();
-        player_attacking = GetComponent<PlayerAttacking>();
         burn_effect = Resources.Load<GameObject>("Player_Status_Effects/burning");
         curse_effect = Resources.Load<GameObject>("Player_Status_Effects/curse");
         stun_effect = Resources.Load<GameObject>("Player_Status_Effects/stun");
@@ -178,6 +179,13 @@ public class PlayerDamageAndHealth : MonoBehaviour
             Parry(attack);
         }
 
+        else if (!attack.cannotBeParried && parryTime > 0f && attack.ignoresInvincibility) // CAN parry attacks that hit through invincibility and can be parried
+        {
+            Instantiate(parry_effect, transform.position, transform.rotation);
+            parryTime = 0f;
+            Parry(attack);
+        }
+
         else if ((attack.ignoresInvincibility || invincibilityTime == 0f) && hiddenInvincibilityTime == 0f) // Hidden invincibility prevents damage spam
         // But player can still get hurt when invincible + no hidden invincibility if attack ignores it
         {
@@ -198,7 +206,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public void Hit(Collider2D col)
     {
 
-        if (player_died || trueInvincibilityTime > 0f)
+        if (player_died || trueInvincibilityTime > 0f || col == null)
         {
             return;
         }
@@ -209,12 +217,22 @@ public class PlayerDamageAndHealth : MonoBehaviour
             attack = col.gameObject.GetComponentInParent<EnemyAttack>();
         }
 
+        if (attack == null) // Who called a hit without an attack?
+            return;
+
         if (trueInvincibilityTime > 0f) // Unconditional blocking of the attack
         {
             Block(attack);
         }
 
         else if (!attack.cannotBeParried && parryTime > 0f && (invincibilityTime + trueInvincibilityTime) == 0f) // Cannot be invincible to parry
+        {
+            Instantiate(parry_effect, transform.position, transform.rotation);
+            parryTime = 0f;
+            Parry(attack);
+        }
+
+        else if (!attack.cannotBeParried && parryTime > 0f && attack.ignoresInvincibility) // CAN parry attacks that hit through invincibility and can be parried
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
             parryTime = 0f;
@@ -419,9 +437,17 @@ public class PlayerDamageAndHealth : MonoBehaviour
     {
         attack.isBlocked();
     }
-    public int check_health()
+    public void initialize(int max_health, int current_health, PlayerAttacking.WeaponType primary_weapon, PlayerAttacking.WeaponType secondary_weapon)
     {
-        return health;
+        maximum_health = max_health;
+        health = current_health;
+        player_attacking.currentWeapon = primary_weapon;
+        player_attacking.lastWeapon = secondary_weapon;
+        if (player_attacking.currentWeapon == player_attacking.lastWeapon)
+        {
+            player_attacking.currentWeapon = PlayerAttacking.WeaponType.Ice;
+            player_attacking.lastWeapon = PlayerAttacking.WeaponType.Fire;
+        }
     }
     private void updateDebuffTimers(float dt)
     {

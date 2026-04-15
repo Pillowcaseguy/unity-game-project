@@ -1,3 +1,4 @@
+using NUnit.Framework.Internal.Commands;
 using UnityEngine;
 using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
@@ -141,7 +142,13 @@ public class PlayerMovement : MonoBehaviour
             crouching = false;
         }
 
-        walkingIntoWall = touchingWall && raycast_touching_wall && moveInput.x != 0 && Mathf.Sign(moveInput.x) == -Mathf.Sign(wallNormal);
+        Vector2 modded_move = moveInput;
+        if (playerHealth.reverseTime > 0f)
+        {
+            modded_move = new Vector2(moveInput.x * -1, moveInput.y);
+        }
+        //walkingIntoWall = touchingWall && raycast_touching_wall && moveInput.x != 0 && Mathf.Sign(moveInput.x) == -Mathf.Sign(wallNormal);
+        walkingIntoWall = touchingWall && raycast_touching_wall && moveInput.x != 0 && Mathf.Sign(modded_move.x) == -Mathf.Sign(wallNormal);
 
         //Debug.DrawRay(origin, Vector2.left * (half_width + 0.05f), walkingIntoWall ? Color.green : Color.red);
         //Debug.DrawRay(origin, Vector2.right * (half_width + 0.05f), walkingIntoWall ? Color.green : Color.red);
@@ -229,6 +236,7 @@ public class PlayerMovement : MonoBehaviour
                 new_controller["falling"] = display;
                 new_controller["jumping"] = display;
                 new_controller["attacking"] = display;
+                new_controller["walking"] = display;
                 new_controller["hurting"] = display;
             }
 
@@ -236,6 +244,7 @@ public class PlayerMovement : MonoBehaviour
             canMoveVertically = false;
             canAttack = false;
             canUseSkills = false;
+            crouching = false;
 
         }
 
@@ -261,14 +270,15 @@ public class PlayerMovement : MonoBehaviour
         if (context.started || context.performed)
         {
             attemptingMove = true;
-            if (playerHealth.reverseTime > 0)
+            /*if (playerHealth.reverseTime > 0)
             {
                 attemptedMove = new Vector2(context.ReadValue<Vector2>().x * -1, context.ReadValue<Vector2>().y);
             }
             else
             {
                 attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
-            }
+            }*/
+            attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
         }
         else if (context.canceled)
         {
@@ -279,9 +289,13 @@ public class PlayerMovement : MonoBehaviour
     public void doMove()
     {
         if (attemptedMove.x == -1)
-            sprite_render.flipX = true;
+        {
+            sprite_render.flipX = (playerHealth.reverseTime > 0) ? false : true;
+        }
         else if (attemptedMove.x == 1)
-            sprite_render.flipX = false;
+        {
+            sprite_render.flipX = (playerHealth.reverseTime > 0) ? true : false;
+        }
 
         moveInput = attemptedMove;
     }
@@ -351,7 +365,6 @@ public class PlayerMovement : MonoBehaviour
     {
         if (context.started)
         {
-            //Debug.Log("Fartity Farts");
             attemptingCrouch = true;
         }
 
@@ -375,7 +388,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnAttack(InputAction.CallbackContext context)
     {
-
         if (context.started)
         {
             attemptingAttack = true;
@@ -384,7 +396,6 @@ public class PlayerMovement : MonoBehaviour
         {
             attemptingAttack = false;
         }
-
     }
     private void doAttack()
     {
@@ -408,21 +419,25 @@ public class PlayerMovement : MonoBehaviour
         {
             attemptingSkill = false;
         }
-
     }
-
     public void OnWeaponSwitch(InputAction.CallbackContext context)
     {
         if (context.started && playerHealth.weaponSwitchCooldown == 0f && !attemptingAttack)
         {
-            if (playerHealth.player_attacking.currentWeapon == PlayerAttacking.WeaponType.Fire)
+            /*if (playerHealth.player_attacking.currentWeapon == PlayerAttacking.WeaponType.Fire)
             {
                 playerHealth.player_attacking.switchWeapon(PlayerAttacking.WeaponType.Ice);
             }
             else if (playerHealth.player_attacking.currentWeapon == PlayerAttacking.WeaponType.Ice)
             {
                 playerHealth.player_attacking.switchWeapon(PlayerAttacking.WeaponType.Fire);
-            }
+            }*/
+
+            /*var temp = playerHealth.player_attacking.currentWeapon;
+            playerHealth.player_attacking.currentWeapon = playerHealth.player_attacking.lastWeapon;
+            playerHealth.player_attacking.lastWeapon = temp;*/
+            playerHealth.player_attacking.switchWeapon(playerHealth.player_attacking.lastWeapon);
+
             playerHealth.weaponSwitchCooldown = 4f;
         }
     }
@@ -443,7 +458,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             playerHealth.parryTime = 0.5f;
-            playerHealth.parryCooldown = 8f;
+            playerHealth.parryCooldown = playerHealth.maxParryCooldown;
         }
     }
     private void player_died()
@@ -466,7 +481,12 @@ public class PlayerMovement : MonoBehaviour
     {
 
         if (((1 << collision.gameObject.layer) & pitLayer) != 0)
-            doJump();
+        {
+            if (!playerHealth.player_died)
+            {
+                doJump();
+            }
+        }
         else
             return;
     }
@@ -508,6 +528,10 @@ public class PlayerMovement : MonoBehaviour
         if (walkingIntoWall || !canMoveHorizontally)
         {
             theX = 0.0f;
+        }
+        if (playerHealth.reverseTime > 0)
+        {
+            theX *= -1;
         }
         rb.linearVelocity = new Vector2(theX, rb.linearVelocity.y);
 

@@ -37,13 +37,12 @@ public class PlayerAttack : MonoBehaviour
     public enum AttackType { Ice, Fire, Gem, Earth, Water, Light, Dark }
     public AttackType attackType = AttackType.Ice;
 
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<BoxCollider2D>();
-        ani = GetComponent<Animator>();
+        ani = GetComponentInChildren<Animator>();
         sprite_render = GetComponent<SpriteRenderer>();
         active_layer = LayerMask.NameToLayer("Player_Attack");
         inactive_layer = LayerMask.NameToLayer("Inactive_Player_Attack");

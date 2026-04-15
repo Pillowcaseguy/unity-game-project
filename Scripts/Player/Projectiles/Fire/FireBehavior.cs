@@ -2,7 +2,6 @@ using UnityEngine;
 public class FireBehavior : MonoBehaviour
 {
     public SpriteRenderer sprite;
-    private Transform transform;
     public PlayerAttack playerAttack;
     private ReflectedFireBehavior reflectedFireBehavior;
 
@@ -44,7 +43,6 @@ public class FireBehavior : MonoBehaviour
     void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
-        transform = GetComponent<Transform>();
         reflectedFireBehavior = GetComponentInChildren<ReflectedFireBehavior>();
 
         //origin = transform.position;

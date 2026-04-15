@@ -3,14 +3,12 @@ public class FireImpactBehavior : MonoBehaviour
 {
     private SpriteRenderer sprite;
     private FireBehavior fireAI;
-    private Transform transform;
     private float offset = 0.6f;
 
     void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
         fireAI = GetComponentInParent<FireBehavior>();
-        transform = GetComponent<Transform>();
     }
 
     void Update()

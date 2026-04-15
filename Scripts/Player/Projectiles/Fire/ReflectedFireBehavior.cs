@@ -2,7 +2,6 @@ using UnityEngine;
 public class ReflectedFireBehavior : MonoBehaviour
 {
     private SpriteRenderer sprite;
-    private Transform transform;
     private EnemyAttack reflectAttack;
     private FireBehavior fireAI;
     public Transform firingPoint;
@@ -36,7 +35,6 @@ public class ReflectedFireBehavior : MonoBehaviour
     void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
-        transform = GetComponent<Transform>();
         reflectAttack = GetComponentInParent<EnemyAttack>();
         fireAI = GetComponentInParent<FireBehavior>();
 

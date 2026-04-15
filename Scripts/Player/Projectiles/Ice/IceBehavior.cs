@@ -34,7 +34,7 @@ public class IceBehavior : MonoBehaviour
     {
 
         rb = GetComponent<Rigidbody2D>();
-        groundLayer = LayerMask.GetMask("Ground");
+        groundLayer = LayerMask.GetMask("Ground","BreakableGround");
         enemyLayer = LayerMask.GetMask("Active_Enemy_Attack","Enemy");
         playerLayer = LayerMask.GetMask("Player_Damage");
         active_layer = LayerMask.NameToLayer("Player_Attack");
@@ -163,7 +163,5 @@ public class IceBehavior : MonoBehaviour
                 col.gameObject.GetComponentInParent<PlayerDamageAndHealth>().Hit(this.col);
             }
         }
-
     }
-
 }

@@ -39,29 +39,29 @@ public class PlayerAttacking : MonoBehaviour
      */
 
     public WeaponType currentWeapon = WeaponType.Ice;
-    public WeaponType lastWeapon = WeaponType.Ice;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public WeaponType lastWeapon = WeaponType.Fire;
+    void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
         playerHealth = GetComponent<PlayerDamageAndHealth>();
         sprite = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
-
+    }
+    void Start()
+    {
         loadWeapon();
-
+        GameManager.Instance.update_weapon();
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        if (currentWeapon != lastWeapon)
+        /*if (currentWeapon != lastWeapon)
         {
             lastWeapon = currentWeapon;
             switchWeapon(currentWeapon);
-        }
+        }*/
 
         if (selectedWeapon == null)
         {
@@ -96,7 +96,6 @@ public class PlayerAttacking : MonoBehaviour
                     weaponCooldown = maxWeaponCooldown;
                 }
             }
-
             else if (currentWeapon == WeaponType.Fire)
             {
                 if (!firingBeam_first_time)
@@ -104,9 +103,25 @@ public class PlayerAttacking : MonoBehaviour
                     firingBeam_first_time = true;
                     attackFire();
                 }
-
             }
-
+            else if (currentWeapon == WeaponType.Gem)
+            {
+                maxWeaponCooldown = 0.4f;
+                if (weaponCooldown <= 0f)
+                {
+                    attackGem();
+                    weaponCooldown = maxWeaponCooldown;
+                }
+            }
+            else if (currentWeapon == WeaponType.Light)
+            {
+                maxWeaponCooldown = 1.6f;
+                if (weaponCooldown <= 0f)
+                {
+                    attackLight();
+                    weaponCooldown = maxWeaponCooldown;
+                }
+            }
         }
 
         if (firingBeam_first_time && !playerMovement.isAttacking)
@@ -139,8 +154,39 @@ public class PlayerAttacking : MonoBehaviour
     {
         weaponCooldown = 0.15f;
     }
+    private void attackGem()
+    {
+        GameObject shootyshootshoot1 = Instantiate(Gem, firePoint.position, Quaternion.Euler(0,0,firePoint.rotation.eulerAngles.z));
+        GameObject shootyshootshoot2 = Instantiate(Gem, firePoint.position, Quaternion.Euler(0, 0, firePoint.rotation.eulerAngles.z + 8));
+        GameObject shootyshootshoot3 = Instantiate(Gem, firePoint.position, Quaternion.Euler(0, 0, firePoint.rotation.eulerAngles.z - 8));
+
+        GemBehavior initiating1 = shootyshootshoot1.GetComponent<GemBehavior>();
+        GemBehavior initiating2 = shootyshootshoot2.GetComponent<GemBehavior>();
+        GemBehavior initiating3 = shootyshootshoot3.GetComponent<GemBehavior>();
+
+        initiating1.Initialize(10, firePoint.eulerAngles.z, 9, gameObject);
+        initiating2.Initialize(10, firePoint.eulerAngles.z + 8, 9, gameObject);
+        initiating3.Initialize(10, firePoint.eulerAngles.z - 8, 9, gameObject);
+        if (playerHealth.weaknessTime > 0)
+        {
+            initiating1.playerAttack.damage = Mathf.CeilToInt(initiating1.playerAttack.damage * (1 - playerHealth.weaknessPotency));
+            initiating2.playerAttack.damage = Mathf.CeilToInt(initiating2.playerAttack.damage * (1 - playerHealth.weaknessPotency));
+            initiating3.playerAttack.damage = Mathf.CeilToInt(initiating3.playerAttack.damage * (1 - playerHealth.weaknessPotency));
+        }
+    }
+    private void attackLight()
+    {
+        GameObject shootyshootshoot = Instantiate(Light, firePoint.position, firePoint.rotation);
+        LightBehavior initiating = shootyshootshoot.GetComponent<LightBehavior>();
+        initiating.Initialize(30, firePoint.eulerAngles.z, 9, gameObject);
+        if (playerHealth.weaknessTime > 0)
+        {
+            initiating.playerAttack.damage = Mathf.CeilToInt(initiating.playerAttack.damage * (1 - playerHealth.weaknessPotency));
+        }
+    }
     public void switchWeapon(WeaponType newWep)
     {
+        lastWeapon = currentWeapon;
         currentWeapon = newWep;
         loadWeapon();
         GameManager.Instance.update_weapon();
