@@ -3,18 +3,11 @@ using UnityEngine;
 public class CameraShake : MonoBehaviour
 {
 
-    private Transform cameraTransform;
-    private float cameraDefaultY = 0.0f;
+    public float cameraCurrentY;
     public float shakeTime = 0f;
     private float lastShake = 0f;
     private bool negativeY = true;
     private bool isShaking = false;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        cameraTransform = GetComponent<Transform>();
-    }
 
     // Update is called once per frame
     void Update()
@@ -44,17 +37,21 @@ public class CameraShake : MonoBehaviour
 
         if (shakeTime == 0f && isShaking == true)
         {
-            float currentX = cameraTransform.position.x;
-            float currentZ = cameraTransform.position.z;
-            cameraTransform.position = new Vector3(currentX,cameraDefaultY,currentZ);
+            float currentX = transform.position.x;
+            float currentZ = transform.position.z;
+            transform.position = new Vector3(currentX,cameraCurrentY,currentZ);
             isShaking = false;
+        }
+        else if (shakeTime == 0f && isShaking == false)
+        {
+            cameraCurrentY = transform.position.y;
         }
 
     }
     private void ShakeCameraVertically()
     {
-        float currentX = cameraTransform.position.x;
-        float currentZ = cameraTransform.position.z;
+        float currentX = transform.position.x;
+        float currentZ = transform.position.z;
         lastShake = 0.05f;
 
         float moveAmount = Mathf.Pow(shakeTime * 2, 2) * 0.25f;
@@ -68,7 +65,7 @@ public class CameraShake : MonoBehaviour
             negativeY = true;
         }
 
-        cameraTransform.position = new Vector3(currentX, moveAmount, currentZ);
+        transform.position = new Vector3(currentX, cameraCurrentY + moveAmount, currentZ);
 
     }
     public void shakeOnHurt(float timeToShake)
