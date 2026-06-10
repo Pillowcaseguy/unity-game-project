@@ -6,7 +6,10 @@ public class LevelManager_TestBoss2 : MonoBehaviour
 
     public GameObject boss;
     public TestBoss2Behavior boss_life;
+    public EnemyActiveBossComponent boss_primary;
     public bool has_boss;
+
+    public GrapplingBossBehavior grappling_boss;
 
     public GameObject player;
     public PlayerDamageAndHealth player_life;
@@ -38,6 +41,9 @@ public class LevelManager_TestBoss2 : MonoBehaviour
 
     public GameObject spawn_point;
 
+    public EnemyActiveBossComponent side_building_left = null;
+    public EnemyActiveBossComponent side_building_right = null;
+
     // Update is called once per frame
     void Update()
     {
@@ -49,6 +55,7 @@ public class LevelManager_TestBoss2 : MonoBehaviour
             {
                 boss = b.gameObject;
                 boss_life = b;
+                boss_primary = b.GetComponent<EnemyActiveBossComponent>();
                 has_boss = true;
             }
         }
@@ -115,11 +122,69 @@ public class LevelManager_TestBoss2 : MonoBehaviour
             phase_changed = true;
         }
 
+        if (has_boss)
+        {
+            if (boss_life.phase == 1)
+            {
+                if (side_building_left == null)
+                {
+                    side_building_left = boss_life.left_building.GetComponentInChildren<EnemyActiveBossComponent>();
+                }
+
+                if (side_building_right == null)
+                {
+                    side_building_right = boss_life.right_building.GetComponentInChildren<EnemyActiveBossComponent>();
+                }
+
+                if (side_building_left != null && side_building_right != null)
+                {
+                    if (boss_life.left.boss_is_on)
+                    {
+                        side_building_left.isPrimary();
+                        side_building_right.notPrimary();
+                    }
+                    else if (boss_life.right.boss_is_on)
+                    {
+                        side_building_right.isPrimary();
+                        side_building_left.notPrimary();
+                    }
+                    else if (boss_life.left.building_health > 0)
+                    {
+                        side_building_left.isPrimary();
+                        side_building_right.notPrimary();
+                    }
+                    else if (boss_life.right.building_health > 0)
+                    {
+                        side_building_right.isPrimary();
+                        side_building_left.notPrimary();
+                    }
+                    else
+                    {
+                        side_building_left.notPrimary();
+                        side_building_right.notPrimary();
+                    }
+                }
+            }
+            else if (boss_life.phase == 2)
+            {
+                if (boss_life.current_swinging_boss != null && grappling_boss == null)
+                {
+                    grappling_boss = boss_life.current_swinging_boss.GetComponent<GrapplingBossBehavior>();
+                    grappling_boss.GetComponent<EnemyActiveBossComponent>().isPrimary();
+                    boss_primary.notPrimary();
+                }
+                else if (boss_life.current_swinging_boss == null && !boss_primary.isPrimaryTarget)
+                {
+                    boss_primary.isPrimary();
+                }
+            }
+        }
+
         if (has_boss && has_player)
         {
             if (boss_life.health <= 0)
             {
-                player_life.trueInvincibilityTime = 1f;
+                player_life.add_true_invincibility_time(1); ;
                 if (!level_loading)
                 {
                     Invoke("load_next_level", 5f);

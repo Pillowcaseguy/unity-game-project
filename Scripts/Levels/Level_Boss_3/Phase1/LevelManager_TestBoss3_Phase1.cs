@@ -60,10 +60,11 @@ public class LevelManager_TestBoss3_Phase1 : MonoBehaviour
         {
             if (boss_life.health <= 0)
             {
-                player_life.trueInvincibilityTime = 1f;
+                player_life.add_true_invincibility_time(1);
                 if (!level_loading)
                 {
                     GameManager.Instance.carryover_health = player_life.health;
+                    GameManager.Instance.carryover_energy = player_life.movement.super_energy;
                     Invoke("load_next_phase", 7f);
                     level_loading = true;
                 }

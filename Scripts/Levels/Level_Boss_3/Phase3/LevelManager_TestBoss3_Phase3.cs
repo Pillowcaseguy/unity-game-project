@@ -44,7 +44,7 @@ public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
         {
             GameManager.Instance.playerUI.set_health_bar = false;
             int new_helf = GameManager.Instance.carryover_health == 0 ? 12 : GameManager.Instance.carryover_health;
-            GameManager.Instance.instantiate_player(spawn_point.transform.position, 12, new_helf);
+            GameManager.Instance.instantiate_player(spawn_point.transform.position, 12, new_helf, GameManager.Instance.carryover_energy);
             player = GameManager.Instance.current_player;
             player_life = GameManager.Instance.player_health;
             has_player = true;
@@ -64,7 +64,7 @@ public class LevelManager_TestBoss3_Phase3 : MonoBehaviour
         {
             if (boss_life.health <= 0)
             {
-                player_life.trueInvincibilityTime = 1f;
+                player_life.add_true_invincibility_time(1);
                 if (!level_loading)
                 {
                     Invoke("load_next_level", 5f);

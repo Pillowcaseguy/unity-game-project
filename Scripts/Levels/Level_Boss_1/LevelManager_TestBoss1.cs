@@ -127,7 +127,7 @@ public class LevelManager_TestBoss1 : MonoBehaviour
         {
             if (boss_life.health <= 0) // Boss Death - Replace with victory.
             {
-                player_life.trueInvincibilityTime = 1.0f;
+                player_life.add_true_invincibility_time(1);
                 if (!level_loading)
                 {
                     Invoke("load_next_level", 5f);
