@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
+public class TestBoss3_Phase3Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
     public Animator ani;
     public Rigidbody2D rb;
@@ -373,6 +373,7 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
     {
         if (is_invincible)
         {
+            player_attack.isBlock();
             return;
         }
 
@@ -544,7 +545,7 @@ public class TestBoss3_Phase3Behavior : MonoBehaviour,EnemyDamageable
             deactivate_lasers();
         }
 
-        all_attacks_cooldown = 1.5f;
+        all_attacks_cooldown = 1.0f;
 
         if (current_shield_bubble && !shield_bubble_behavior.sprite.enabled)
         {

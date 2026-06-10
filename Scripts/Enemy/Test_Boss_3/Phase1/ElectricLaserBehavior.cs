@@ -89,7 +89,7 @@ public class ElectricLaserBehavior : MonoBehaviour
                     ph.Hit_No_Collider(gameObject);
                     parry_cooldown = 1.5f;
                 }
-                else if (parry_cooldown <= 0 && hit_cooldown <= 0)
+                else if (parry_cooldown <= 0 && hit_cooldown <= 0 && ph.trueInvincibilityTime <= 0)
                 {
                     ph.Hit_No_Collider(gameObject);
                     GameObject shock = Instantiate(shocked_player,ph.gameObject.transform.position,Quaternion.Euler(0,0,0));

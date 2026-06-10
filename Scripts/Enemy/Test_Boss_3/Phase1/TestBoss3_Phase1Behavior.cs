@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TestBoss3_Phase1Behavior : MonoBehaviour, EnemyDamageable
+public class TestBoss3_Phase1Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public int health;

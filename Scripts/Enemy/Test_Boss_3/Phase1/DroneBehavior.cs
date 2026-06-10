@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DroneBehavior : MonoBehaviour,EnemyDamageable
+public class DroneBehavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public int health;

@@ -1,7 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class TestBoss3_Phase2Behavior : MonoBehaviour,EnemyDamageable
+public class TestBoss3_Phase2Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public Animator ani;
