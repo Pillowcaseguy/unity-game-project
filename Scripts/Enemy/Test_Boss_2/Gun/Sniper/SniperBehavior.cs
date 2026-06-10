@@ -88,7 +88,7 @@ public class SniperBehavior : MonoBehaviour
         if (took_shot && !is_destroyed)
         {
             Destroy(current_laser);
-            int bullet_type = Random.Range(0, 4);
+            int bullet_type = Random.Range(0, 3);
             GameObject shot = Instantiate(sniper_bullet,sf.gameObject.transform.position,Quaternion.Euler(0,0,transform.rotation.eulerAngles.z));
             SniperBulletBehavior ss = shot.GetComponent<SniperBulletBehavior>();
             ss.Initialize(18, transform.rotation.eulerAngles.z, 3, bullet_type);

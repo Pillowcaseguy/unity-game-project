@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TestBoss2Behavior : MonoBehaviour,EnemyDamageable
+public class TestBoss2Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public bool aiming_gun;
@@ -259,6 +259,8 @@ public class TestBoss2Behavior : MonoBehaviour,EnemyDamageable
             last_attack = 0;
             is_jumping = false;
             is_preparing_jump = false;
+            left_building.GetComponentInChildren<EnemyActiveBossComponent>().notPrimary();
+            right_building.GetComponentInChildren<EnemyActiveBossComponent>().notPrimary();
         }
 
         if (phase == 2)

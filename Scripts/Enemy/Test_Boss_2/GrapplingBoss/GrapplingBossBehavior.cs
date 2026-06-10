@@ -1,5 +1,5 @@
 using UnityEngine;
-public class GrapplingBossBehavior : MonoBehaviour,EnemyDamageable
+public class GrapplingBossBehavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public Rigidbody2D rb;
@@ -237,7 +237,7 @@ public class GrapplingBossBehavior : MonoBehaviour,EnemyDamageable
                         {
                             if (!done_swinging_completely)
                             {
-                                rb.linearVelocityX = -5;
+                                rb.linearVelocityX = -6;
                                 ani.SetBool("is_throwing", true);
                                 ani.SetBool("is_shooting", false);
                                 ani.SetBool("is_grappling", false);
@@ -301,7 +301,7 @@ public class GrapplingBossBehavior : MonoBehaviour,EnemyDamageable
                         {
                             if (!done_swinging_completely)
                             {
-                                rb.linearVelocityX = 5;
+                                rb.linearVelocityX = 6;
                                 ani.SetBool("is_throwing", true);
                                 ani.SetBool("is_shooting", false);
                                 ani.SetBool("is_grappling", false);

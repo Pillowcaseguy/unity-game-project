@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class LandmineBehavior : MonoBehaviour
 {
@@ -17,6 +16,10 @@ public class LandmineBehavior : MonoBehaviour
     public SpriteRenderer sprite;
     public Animator ani;
 
+    public float half_width;
+    public float scale;
+    public float half_height;
+
     LayerMask playerLayer;
     LayerMask groundLayer;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -29,6 +32,10 @@ public class LandmineBehavior : MonoBehaviour
         rb.linearVelocityY = 6;
         sprite = GetComponentInChildren<SpriteRenderer>();
         ani = GetComponentInChildren<Animator>();
+
+        scale = 3;
+        half_width = box.size.x / 2f * scale;
+        half_height = box.size.y / 2f * scale;
     }
     private void FixedUpdate()
     {
@@ -41,7 +48,7 @@ public class LandmineBehavior : MonoBehaviour
         {
             sprite.transform.rotation = Quaternion.Euler(0, 0, 0);
             hit_something = true;
-            rb.gravityScale = 0;
+            rb.bodyType = RigidbodyType2D.Kinematic;
             rb.linearVelocityY = 0;
             ani.SetBool("is_active", true);
         }
@@ -49,6 +56,10 @@ public class LandmineBehavior : MonoBehaviour
 
     void Update()
     {
+        Debug.DrawLine(new Vector2(transform.position.x - half_width + 0.1f,transform.position.y - half_height),
+            new Vector2(transform.position.x - half_width + 0.1f, transform.position.y - half_height - 0.1f), Color.red);
+        Debug.DrawLine(new Vector2(transform.position.x + half_width - 0.1f,transform.position.y - half_height),
+            new Vector2(transform.position.x + half_width - 0.1f, transform.position.y - half_height - 0.1f), Color.red);
         if (lifetime > 0)
         {
             lifetime -= Time.deltaTime;
@@ -90,8 +101,8 @@ public class LandmineBehavior : MonoBehaviour
         }
         else
         {
-            RaycastHit2D attempt1 = Physics2D.Raycast(new Vector2(transform.position.x - 0.2f,transform.position.y), -transform.up, 2f, groundLayer);
-            RaycastHit2D attempt2 = Physics2D.Raycast(new Vector2(transform.position.x + 0.2f,transform.position.y), -transform.up, 2f, groundLayer);
+            RaycastHit2D attempt1 = Physics2D.Raycast(new Vector2(transform.position.x + half_width - 0.1f, transform.position.y - half_height - 0.1f), -transform.up, 2f, groundLayer);
+            RaycastHit2D attempt2 = Physics2D.Raycast(new Vector2(transform.position.x - half_width + 0.1f,transform.position.y - half_height - 0.1f), -transform.up, 2f, groundLayer);
             GameObject first_hit = null;
             if (attempt1.collider != null)
             {

@@ -1,7 +1,6 @@
-using System;
 using UnityEngine;
 
-public class SideBuildingBehavior : MonoBehaviour,EnemyDamageable
+public class SideBuildingBehavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     private GameObject the_boss;
@@ -84,8 +83,9 @@ public class SideBuildingBehavior : MonoBehaviour,EnemyDamageable
     {
         if (!boss_is_on)
         {
+            player_attack.damage /= 2;
             player_attack.isHit();
-            TakeDamage(player_attack.damage / 2);
+            TakeDamage(player_attack.damage);
         }
         else
         {

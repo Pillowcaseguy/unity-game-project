@@ -7,6 +7,7 @@ public class SmokeBehavior : MonoBehaviour
 
     public float lifetime;
     public bool initialized = false;
+    public bool working = false;
     void Awake()
     {
         ani = GetComponent<Animator>();
@@ -16,6 +17,7 @@ public class SmokeBehavior : MonoBehaviour
     {
         lifetime = life;
         initialized = true;
+        working = true;
     }
     void Update()
     {
@@ -29,8 +31,8 @@ public class SmokeBehavior : MonoBehaviour
             lifetime -= Time.deltaTime;
             if (lifetime < 0)
             {
-                attack.DisableHitbox();
                 lifetime = 0;
+                working = false;
             }
         }
 
@@ -40,6 +42,19 @@ public class SmokeBehavior : MonoBehaviour
     public void destroy()
     {
         Destroy(gameObject);
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (!working)
+        {
+            return;
+        }
+        PlayerDamageAndHealth attempt = collision.gameObject.GetComponent<PlayerDamageAndHealth>();
+        if (attempt != null)
+        {
+            attempt.Hit_No_Collider(gameObject);
+        }
     }
 
 }
