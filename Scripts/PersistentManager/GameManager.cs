@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject current_player;
     public PlayerDamageAndHealth player_health;
+    public PlayerMovement player_movement;
 
     public PlayerUI playerUI;
 
@@ -24,6 +25,7 @@ public class GameManager : MonoBehaviour
     public GameObject player_prefab;
 
     public int carryover_health;
+    public int carryover_energy;
 
     void Awake()
     {
@@ -41,6 +43,7 @@ public class GameManager : MonoBehaviour
     public void set_current_player(GameObject player)
     {
         player_health = null;
+        player_movement = null;
         current_player = player;
     }
     void Update()
@@ -57,6 +60,7 @@ public class GameManager : MonoBehaviour
         {
             playerUI.gameObject.SetActive(false);
             player_health = null;
+            player_movement = null;
         }
 
         else
@@ -77,7 +81,16 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (current_player != null && player_health != null)
+        if (current_player != null && player_movement == null)
+        {
+            PlayerMovement attempt = current_player.GetComponent<PlayerMovement>();
+            if (attempt != null)
+            {
+                player_movement = attempt;
+            }
+        }
+
+        if (current_player != null && player_health != null && player_movement != null)
         {
             if (player_health.blindTime > 0)
             {
@@ -90,6 +103,7 @@ public class GameManager : MonoBehaviour
 
             playerUI.updatePortrait(player_health);
             playerUI.updateHealthBar(player_health);
+            playerUI.updateEnergyBar(player_movement);
         }
         else
         {
@@ -108,7 +122,7 @@ public class GameManager : MonoBehaviour
             playerUI.get_current_weapon(hi);
         }
     }
-    public void instantiate_player(Vector2 position, int max_health, int health)
+    public void instantiate_player(Vector2 position, int max_health, int health, int energy = 0)
     {
         int new_health = health;
         if (current_player != null)
@@ -129,6 +143,6 @@ public class GameManager : MonoBehaviour
         {
             new_health = max_health;
         }
-        player_health.initialize(max_health, new_health, first_wep, second_wep);
+        player_health.initialize(max_health, new_health, first_wep, second_wep, energy);
     }
 }

@@ -1,7 +1,7 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static PlayerAttacking;
-
 public class PlayerUI : MonoBehaviour
 {
 
@@ -61,6 +61,9 @@ public class PlayerUI : MonoBehaviour
 
     public bool set_health_bar = false;
 
+    public TextMeshProUGUI super_energy_text;
+    public RectTransform energy_bar_t;
+
     void Start()
     {
         bg_bar = background_bar.GetComponent<Image>();
@@ -77,7 +80,7 @@ public class PlayerUI : MonoBehaviour
 
     public void updatePortrait(PlayerDamageAndHealth player_health)
     {
-        double health_ratio = (double) player_health.health / player_health.maximum_health;
+        double health_ratio = (double)player_health.health / player_health.maximum_health;
         Color final_bg_bar;
         Color final_bg_sq;
         Sprite final_head;
@@ -129,7 +132,7 @@ public class PlayerUI : MonoBehaviour
     }
     public Color roll_bar(PlayerDamageAndHealth h)
     {
-        return new Color(0,0,0,0.8f);
+        return new Color(0, 0, 0, 0.8f);
     }
     public Color roll_square(PlayerDamageAndHealth h)
     {
@@ -164,7 +167,7 @@ public class PlayerUI : MonoBehaviour
         }
 
         return cursed_head;
-        
+
     }
     public Sprite roll_left_eye(PlayerDamageAndHealth h, double ratio)
     {
@@ -188,7 +191,7 @@ public class PlayerUI : MonoBehaviour
         {
             return x_eye;
         }
-        
+
         if (h.blindTime > 0)
         {
             return white_eye;
@@ -311,7 +314,7 @@ public class PlayerUI : MonoBehaviour
         return happy_mouth;
 
     }
-    public void updateHealthBar(PlayerDamageAndHealth player_health) 
+    public void updateHealthBar(PlayerDamageAndHealth player_health)
     {
         if (!set_health_bar)
         {
@@ -323,11 +326,33 @@ public class PlayerUI : MonoBehaviour
         int remainder = player_health.health % 2;
         float fillWidth = Mathf.Min(starting_base * 128 + remainder * 66 - 1, health_bar_t.sizeDelta.x);
         health_fill_t.sizeDelta = new Vector2(fillWidth, health_bar_t.sizeDelta.y);
-
+    }
+    public void updateEnergyBar(PlayerMovement playerMovement)
+    {
+        updateEnergyText(playerMovement);
+        float fillWidth = playerMovement.super_energy;
+        energy_bar_t.sizeDelta = new Vector2(fillWidth, energy_bar_t.sizeDelta.y);
+    }
+    public void updateEnergyText(PlayerMovement playerMovement)
+    {
+        int the_energy = playerMovement.super_energy;
+        super_energy_text.text = the_energy.ToString();
+        if (the_energy < 100)
+        {
+            super_energy_text.color = Color.white;
+        }
+        else if (the_energy >= 100 && the_energy < 500)
+        {
+            super_energy_text.color = Color.yellow;
+        }
+        else
+        {
+            super_energy_text.color = Color.red;
+        }
     }
     public void get_current_weapon(PlayerAttacking weapon)
     {
-        PlayerAttacking.WeaponType x = weapon.currentWeapon;
+        WeaponType x = weapon.currentWeapon;
 
         if (x == WeaponType.Ice)
         {
@@ -362,7 +387,7 @@ public class PlayerUI : MonoBehaviour
             weapon_type.sprite = weapon_ice;
         }
 
-        PlayerAttacking.WeaponType y = weapon.lastWeapon;
+        WeaponType y = weapon.lastWeapon;
 
         if (y == WeaponType.Ice)
         {
