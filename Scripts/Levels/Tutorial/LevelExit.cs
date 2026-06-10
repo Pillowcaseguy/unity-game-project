@@ -3,8 +3,16 @@ using UnityEngine.SceneManagement;
 
 public class LevelExit : MonoBehaviour
 {
-    private void OnTriggerEnter2D(Collider2D collision)
+    public LayerMask player_layer;
+    private void Awake()
     {
-        SceneManager.LoadScene("Main Menu");
+        player_layer = LayerMask.GetMask("Player");
+    }
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (((1 << col.gameObject.layer) & player_layer) != 0)
+        {
+            SceneManager.LoadScene("Main Menu");
+        }
     }
 }
