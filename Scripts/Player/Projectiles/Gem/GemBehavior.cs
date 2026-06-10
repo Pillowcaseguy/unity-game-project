@@ -19,12 +19,15 @@ public class GemBehavior : MonoBehaviour
     public bool reflected_first_time = false;
     public bool reflected = false;
     private GameObject owner;
+    private PlayerDamageAndHealth player_health;
 
     public LayerMask groundLayer;
     public LayerMask enemyLayer;
     public LayerMask playerLayer;
     public LayerMask active_layer;
     public LayerMask inactive_layer;
+
+    public bool hit_legit_target;
     void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
@@ -42,13 +45,14 @@ public class GemBehavior : MonoBehaviour
         inactive_layer = LayerMask.NameToLayer("Inactive_Player_Attack");
         col = GetComponent<BoxCollider2D>();
     }
-    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator)
+    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator, PlayerDamageAndHealth helf)
     {
         speed = moveSpeed;
         rotation = zRotation;
         initial_rotation = zRotation;
         life = lifetime;
         owner = creator;
+        player_health = helf;
     }
     // Update is called once per frame
     private void Update()
@@ -96,6 +100,11 @@ public class GemBehavior : MonoBehaviour
         {
             if (!destroyed_first_time)
             {
+                if (playerAttack.wasHit && hit_legit_target)
+                {
+                    //player_health.AddEnergy(Mathf.RoundToInt(playerAttack.damage * 0.8f));
+                    player_health.AddEnergy(Mathf.RoundToInt(playerAttack.damage * 0.88f));
+                }
                 destroyed_first_time = true;
                 playerAttack.DisableHitbox();
                 trail_sprite.enabled = false;
@@ -120,7 +129,7 @@ public class GemBehavior : MonoBehaviour
     {
         if (col.gameObject.CompareTag("Reflective") && ((1 << col.gameObject.layer) & enemyLayer) != 0)
         {
-            this.reflected = true;
+            reflected = true;
         }
 
         else if (((1 << col.gameObject.layer) & groundLayer) != 0)
@@ -148,7 +157,16 @@ public class GemBehavior : MonoBehaviour
                 }
                 else
                 {
-                    attempt.Hit(playerAttack);
+                    if (player_health != null && player_health.health > 0)
+                    {
+                        hit_legit_target = true;
+                        attempt.Hit(playerAttack);
+                    }
+                    else
+                    {
+                        playerAttack.damage = 0;
+                        attempt.Hit(playerAttack);
+                    }
                 }
             }
         }

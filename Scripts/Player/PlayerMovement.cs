@@ -1,23 +1,27 @@
-using NUnit.Framework.Internal.Commands;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
 
     public float moveSpeed = 5f;
     public float jumpForce = 5f;
+    public float dashSpeed = 10f;
 
     private Vector2 moveInput;
     public Rigidbody2D rb;
     private PlayerInput controls;
     private BoxCollider2D col;
-    private Animator ani;
+    public Animator ani;
     public SpriteRenderer sprite_render;
+    public Vector2 origin;
 
     private AnimatorOverrideController new_controller;
     private RuntimeAnimatorController original_controller;
 
     private PlayerDamageAndHealth playerHealth;
+    private PlayerAttacking playerAttacking;
 
     public bool jumpPressed = false;
     public bool isJumping = false;
@@ -32,14 +36,29 @@ public class PlayerMovement : MonoBehaviour
     public int jumps_remaining = 0;
     public bool down_jumping = false;
     public bool down_jumped = false;
-    public float down_jump_time = 0.0f;
+    public float down_jump_time = 0f;
     public bool crouching = false;
     public bool locked = false;
+    public bool dashing = false;
+    public float dash_time = 0f;
+    public float dash_cooldown = 0f;
+    public float set_dash_cooldown = 1f;
+    public bool touched_ground_since_dash = false;
+
+    public int super_energy;
+    public int super_energy_maximum;
+
+    public bool isSuperAttacking = false;
 
     public bool canMoveHorizontally = true;
     public bool canMoveVertically = true;
     public bool canAttack = true;
     public bool canUseSkills = true;
+    public bool canDash = true;
+    public bool canJump = true;
+    public bool canSuperAttack = true;
+
+    public bool anything_super_related;
 
     public bool directionReversed = false;
 
@@ -49,6 +68,12 @@ public class PlayerMovement : MonoBehaviour
     public bool attemptingAttack;
     public bool attemptingSkill;
     public bool attemptingMove;
+    public bool attemptingDash;
+    public bool attemptingSuperAttack;
+
+    public float super_height;
+    public bool super_first_windup;
+    public bool super_windingUp;
 
     public Vector2 attemptedMove;
 
@@ -68,6 +93,8 @@ public class PlayerMovement : MonoBehaviour
     AnimationClip stunned;
     AnimationClip frozen;
     public bool animator_changed;
+
+    public bool player_just_died;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -76,22 +103,20 @@ public class PlayerMovement : MonoBehaviour
         col = GetComponent<BoxCollider2D>();
         ani = GetComponent<Animator>();
         original_controller = ani.runtimeAnimatorController;
-        new_controller = new AnimatorOverrideController (ani.runtimeAnimatorController);
+        new_controller = new AnimatorOverrideController(ani.runtimeAnimatorController);
         width = col.bounds.size.x;
         half_width = width / 2.0f;
         height = col.bounds.size.y;
 
         playerHealth = GetComponent<PlayerDamageAndHealth>();
+        playerAttacking = GetComponent<PlayerAttacking>();
 
         stunned = Resources.Load<AnimationClip>("Replacement_Animations/Player/stunned");
         frozen = Resources.Load<AnimationClip>("Replacement_Animations/Player/frozen");
-
     }
-
     void Update()
     {
-
-        Vector2 origin = col.bounds.center;
+        origin = col.bounds.center;
         Vector2 direction = Vector2.down;
         left = origin + Vector2.left * half_width;
         right = origin + Vector2.right * half_width;
@@ -111,6 +136,7 @@ public class PlayerMovement : MonoBehaviour
         if (touchingGround && rb.linearVelocity.y <= 0.01f)
         {
             onGround = true;
+            touched_ground_since_dash = true;
             isJumping = false;
             if (down_jump_time == 0f)
                 down_jumping = false;
@@ -126,7 +152,6 @@ public class PlayerMovement : MonoBehaviour
         {
             doCrouch();
         }
-
         else
         {
             crouching = false;
@@ -137,13 +162,15 @@ public class PlayerMovement : MonoBehaviour
             crouching = false;
         }
 
-        if (isJumping || !onGround || Mathf.Abs(rb.linearVelocity.x) >= 0.1f || playerHealth.parryTime > 0f)
-        {            
+        if (isJumping || !onGround || Mathf.Abs(rb.linearVelocity.x) >= 0.1f || playerHealth.parryTime > 0f || anything_super_related || ani.GetBool("isLesserSuperAttacking"))
+        {
             crouching = false;
         }
 
+        directionReversed = playerHealth.reverseTime > 0f;
+
         Vector2 modded_move = moveInput;
-        if (playerHealth.reverseTime > 0f)
+        if (directionReversed)
         {
             modded_move = new Vector2(moveInput.x * -1, moveInput.y);
         }
@@ -153,11 +180,15 @@ public class PlayerMovement : MonoBehaviour
         //Debug.DrawRay(origin, Vector2.left * (half_width + 0.05f), walkingIntoWall ? Color.green : Color.red);
         //Debug.DrawRay(origin, Vector2.right * (half_width + 0.05f), walkingIntoWall ? Color.green : Color.red);
 
-        Debug.DrawRay(new Vector2(origin.x,origin.y - (height / 2f - 0.01f)), Vector2.left * (half_width + 0.05f), raycast_touching_wall ? Color.green : Color.red);
-        RaycastHit2D try_wall_left = Physics2D.Raycast(new Vector2(origin.x,origin.y - (height / 2f - 0.01f)), Vector2.left, half_width + 0.05f, groundLayer);
+        Debug.DrawRay(new Vector2(origin.x, origin.y - (height / 2f - 0.01f)), Vector2.left * (half_width + 0.05f), raycast_touching_wall ? Color.green : Color.red);
+        RaycastHit2D try_wall_left = Physics2D.Raycast(new Vector2(origin.x, origin.y - (height / 2f - 0.01f)), Vector2.left, half_width + 0.05f, groundLayer);
 
         Debug.DrawRay(new Vector2(origin.x, origin.y - (height / 2f - 0.01f)), Vector2.right * (half_width + 0.05f), raycast_touching_wall ? Color.green : Color.red);
         RaycastHit2D try_wall_right = Physics2D.Raycast(new Vector2(origin.x, origin.y - (height / 2f - 0.01f)), Vector2.right, half_width + 0.05f, groundLayer);
+
+        //Debug.DrawRay(new Vector2(origin.x + half_width, origin.y + (height / 2f)), Vector2.up * 10, Color.blue);
+        //Debug.DrawRay(new Vector2(origin.x, origin.y + (height / 2f)), Vector2.up * 10, Color.blue);
+        //Debug.DrawRay(new Vector2(origin.x - half_width, origin.y + (height / 2f)), Vector2.up * 10, Color.blue);
 
         if (try_wall_left.collider != null || try_wall_right.collider != null)
         {
@@ -169,30 +200,65 @@ public class PlayerMovement : MonoBehaviour
             raycast_touching_wall = false;
         }
 
+        if (attemptingSuperAttack && canSuperAttack)
+        {
+            doSuperAttack();
+        }
+
+        if (super_windingUp)
+        {
+            if (transform.position.y < super_height)
+            {
+                transform.position += new Vector3(0, Time.deltaTime * 80f, 0);
+                if (transform.position.y > super_height)
+                {
+                    transform.position = new Vector2(transform.position.x,super_height);
+                }
+            }
+            else
+            {
+                super_windingUp = false;
+                isSuperAttacking = true;
+                ani.SetBool("isSuperAttacking", true);
+            }
+        }
+
         doMove();
 
-        if (attemptingJump)
+        anything_super_related = super_first_windup || super_windingUp || isSuperAttacking;
+        if (anything_super_related)
+        {
+            playerHealth.add_true_invincibility_time(0.5f);
+        }
+
+        if (attemptingJump && canJump && !anything_super_related)
         {
             attemptJump();
         }
 
-        if (attemptingAttack)
+        if (attemptingAttack && !dashing && !anything_super_related && !ani.GetBool("isLesserSuperAttacking"))
         {
             doAttack();
         }
+
         else
         {
             isAttacking = false;
         }
 
-        if (attemptingSkill)
+        if (attemptingSkill && !dashing && !anything_super_related && !ani.GetBool("isLesserSuperAttacking"))
         {
             useSkill();
         }
 
-        if (locked)
+        if (locked && !dashing && !anything_super_related)
         {
             doLock();
+        }
+
+        if (attemptingDash)
+        {
+            doDash();
         }
 
         ani.SetBool("isGrounded", onGround);
@@ -204,7 +270,9 @@ public class PlayerMovement : MonoBehaviour
         ani.SetBool("isAscending", rb.linearVelocityY >= 0.01f);
         ani.SetBool("isDownJumping", down_jumping);
         ani.SetBool("isAttacking", isAttacking);
-        ani.SetBool("isParrying", (playerHealth.parryTime > 0f));
+        ani.SetBool("isParrying", playerHealth.parryTime > 0f);
+        ani.SetBool("isDashing", dashing);
+        ani.SetBool("isWindingUpSuper", super_first_windup);
 
         bool isStunned = playerHealth.stunTime > 0f;
         bool isFrozen = playerHealth.freezeTime > 0f;
@@ -245,7 +313,9 @@ public class PlayerMovement : MonoBehaviour
             canAttack = false;
             canUseSkills = false;
             crouching = false;
-
+            canDash = false;
+            endDash(true);
+            canSuperAttack = false;
         }
 
         else
@@ -256,6 +326,8 @@ public class PlayerMovement : MonoBehaviour
             canMoveVertically = true;
             canAttack = true;
             canUseSkills = true;
+            canDash = true;
+            canSuperAttack = true;
         }
 
         if (playerHealth.player_died)
@@ -263,21 +335,12 @@ public class PlayerMovement : MonoBehaviour
             ani.SetBool("isDead", playerHealth.player_died);
             player_died();
         }
-
     }
     public void OnMove(InputAction.CallbackContext context)
     {
         if (context.started || context.performed)
         {
             attemptingMove = true;
-            /*if (playerHealth.reverseTime > 0)
-            {
-                attemptedMove = new Vector2(context.ReadValue<Vector2>().x * -1, context.ReadValue<Vector2>().y);
-            }
-            else
-            {
-                attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
-            }*/
             attemptedMove = new Vector2(context.ReadValue<Vector2>().x, context.ReadValue<Vector2>().y);
         }
         else if (context.canceled)
@@ -288,20 +351,21 @@ public class PlayerMovement : MonoBehaviour
     }
     public void doMove()
     {
-        if (attemptedMove.x == -1)
+        if (!dashing && !anything_super_related)
         {
-            sprite_render.flipX = (playerHealth.reverseTime > 0) ? false : true;
+            if (attemptedMove.x == -1)
+            {
+                sprite_render.flipX = !directionReversed;
+            }
+            else if (attemptedMove.x == 1)
+            {
+                sprite_render.flipX = directionReversed;
+            }
         }
-        else if (attemptedMove.x == 1)
-        {
-            sprite_render.flipX = (playerHealth.reverseTime > 0) ? true : false;
-        }
-
         moveInput = attemptedMove;
     }
     public void OnJump(InputAction.CallbackContext context)
     {
-
         if (context.started)
         {
             attemptingJump = true;
@@ -314,7 +378,6 @@ public class PlayerMovement : MonoBehaviour
             jumpPressed = false;
             jump_time = 0f;
         }
-
     }
     public void OnLock(InputAction.CallbackContext context)
     {
@@ -327,7 +390,6 @@ public class PlayerMovement : MonoBehaviour
         {
             locked = false;
         }
-
     }
     private void doLock()
     {
@@ -336,7 +398,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void attemptJump()
     {
-        if (!canMoveVertically)
+        if (!canMoveVertically || anything_super_related)
         {
             return;
         }
@@ -353,7 +415,6 @@ public class PlayerMovement : MonoBehaviour
             jump_time = max_jump_time;
             doJump();
         }
-
     }
     private void doJump()
     {
@@ -368,14 +429,14 @@ public class PlayerMovement : MonoBehaviour
             attemptingCrouch = true;
         }
 
-        if (context.canceled) {
+        if (context.canceled)
+        {
             attemptingCrouch = false;
         }
-
     }
     private void doCrouch()
     {
-        if (!canMoveVertically)
+        if (!canMoveVertically || anything_super_related)
         {
             return;
         }
@@ -385,7 +446,6 @@ public class PlayerMovement : MonoBehaviour
             crouching = true;
         }
     }
-
     public void OnAttack(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -399,7 +459,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void doAttack()
     {
-        if (!canAttack)
+        if (!canAttack && !anything_super_related)
         {
             isAttacking = false;
         }
@@ -410,7 +470,6 @@ public class PlayerMovement : MonoBehaviour
     }
     public void OnSkillUse(InputAction.CallbackContext context)
     {
-
         if (context.started)
         {
             attemptingSkill = true;
@@ -422,7 +481,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public void OnWeaponSwitch(InputAction.CallbackContext context)
     {
-        if (context.started && playerHealth.weaponSwitchCooldown == 0f && !attemptingAttack)
+        if (context.started && playerHealth.weaponSwitchCooldown == 0f && !attemptingAttack && !anything_super_related)
         {
             /*if (playerHealth.player_attacking.currentWeapon == PlayerAttacking.WeaponType.Fire)
             {
@@ -437,21 +496,132 @@ public class PlayerMovement : MonoBehaviour
             playerHealth.player_attacking.currentWeapon = playerHealth.player_attacking.lastWeapon;
             playerHealth.player_attacking.lastWeapon = temp;*/
             playerHealth.player_attacking.switchWeapon(playerHealth.player_attacking.lastWeapon);
-
+            playerHealth.RemoveEnergy(50);
             playerHealth.weaponSwitchCooldown = 4f;
         }
     }
-
     public void DoStage2_Debug(InputAction.CallbackContext context)
     {
         if (context.started)
         {
-            Debug.Log("nope.");
+            SceneManager.LoadScene("Main Menu");
         }
+    }
+    public void DoDash(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            attemptingDash = true;
+        }
+        else if (context.canceled)
+        {
+            attemptingDash = false;
+        }
+    }
+    private void doDash()
+    {
+        if (canDash && dash_cooldown <= 0f && !dashing && !(playerHealth.slowTime > 0) && !anything_super_related)
+        {
+            dash_time = 0.5f;
+            playerHealth.parryTime = 0f;
+            dashing = true;
+            if (!onGround)
+            {
+                touched_ground_since_dash = false;
+            }
+        }
+    }
+    public void endDash(bool immediate = false)
+    {
+        if (immediate)
+        {
+            dash_time = 0;
+            dashing = false;
+            dash_cooldown = set_dash_cooldown;
+            return;
+        }
+
+        dash_time -= Time.fixedDeltaTime;
+        if (dash_time <= 0)
+        {
+            dashing = false;
+            dash_cooldown = set_dash_cooldown;
+        }
+    }
+    public void DoSuperAttack(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            attemptingSuperAttack = true;
+        }
+        else if (context.canceled)
+        {
+            attemptingSuperAttack = false;
+        }
+    }
+    private void doSuperAttack()
+    {
+        if (canSuperAttack && playerHealth.blindTime <= 0 && !anything_super_related && playerHealth.hurtTime <= 0 && super_energy >= 500)
+        {
+            //DEBUG_SUPER_COOLDOWN = 50f;
+            endDash(true);
+            playerHealth.RemoveEnergy(500);
+            super_first_windup = true;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.linearVelocity = new Vector2(0, 0);
+            Time.timeScale = 0.1f;
+            ani.speed = 1f / (Time.timeScale);
+
+            LayerMask onlyGround = LayerMask.GetMask("Ground", "BreakableGround");
+            RaycastHit2D look_for_ceiling_middle = Physics2D.Raycast(new Vector2(origin.x, origin.y + (height / 2f)), Vector2.up, 20f, onlyGround);
+            RaycastHit2D look_for_ceiling_left = Physics2D.Raycast(new Vector2(origin.x - half_width, origin.y + (height / 2f)), Vector2.up, 20f, onlyGround);
+            RaycastHit2D look_for_ceiling_right = Physics2D.Raycast(new Vector2(origin.x + half_width, origin.y + (height / 2f)), Vector2.up, 20f, onlyGround);
+
+            float addition = 5f;
+            if (look_for_ceiling_middle.collider != null)
+            {
+                addition = look_for_ceiling_middle.distance / 2f;
+            }
+            else if (look_for_ceiling_left.collider != null)
+            {
+                addition = look_for_ceiling_left.distance / 2f;
+            }
+            else if (look_for_ceiling_right.collider != null)
+            {
+                addition = look_for_ceiling_right.distance / 2f;
+            }
+            super_height = transform.position.y + addition;
+        }
+        else if (canSuperAttack && !anything_super_related && playerHealth.hurtTime <= 0 && !ani.GetBool("isLesserSuperAttacking") && super_energy >= 100)
+        {
+            playerHealth.RemoveEnergy(100);
+            rb.bodyType = RigidbodyType2D.Static;
+            playerHealth.parryTime = 0f;
+            //rb.linearVelocity = new Vector2(0, 0);
+            ani.SetBool("isLesserSuperAttacking", true);
+        }
+    }
+    public void endSuperWindup()
+    {
+        super_first_windup = false;
+        super_windingUp = true;
+    }
+    public void call_super_attack()
+    {
+        isSuperAttacking = true;
+        playerAttacking.doSuperAttack();
+    }
+    public void end_super_attacking()
+    {
+        isSuperAttacking = false;
+        ani.SetBool("isSuperAttacking", false);
+        Time.timeScale = 1;
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        ani.speed = 1;
     }
     private void useSkill()
     {
-        if (!canUseSkills || playerHealth.parryCooldown > 0f)
+        if (!canUseSkills || anything_super_related || playerHealth.parryCooldown > 0f)
         {
             return;
         }
@@ -469,7 +639,29 @@ public class PlayerMovement : MonoBehaviour
         attemptingAttack = false;
         attemptingSkill = false;
         attemptingMove = false;
-}
+        attemptingDash = false;
+        attemptingSuperAttack = false;
+        ani.SetInteger("deathType", (int) playerHealth.lastHitType);
+
+        if (playerHealth.lastHitType == EnemyAttack.AttackType.Pit)
+        {
+            if (transform.position.y <= -20)
+            {
+                transform.position = new Vector2(transform.position.x, -20);
+            }
+        }
+
+        if (!player_just_died)
+        {
+            player_just_died = true;
+            dash_time = 0;
+            rb.linearVelocity = new Vector2(0, 0);
+            if (playerHealth.lastHitType == EnemyAttack.AttackType.Pit)
+            {
+                col.enabled = false;
+            }
+        }
+    }
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (((1 << collision.gameObject.layer) & triggerLayer) != 0) // If what exited is on the triggerLayer
@@ -479,7 +671,6 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionEnter2D(Collision2D collision) // Check for pits
     {
-
         if (((1 << collision.gameObject.layer) & pitLayer) != 0)
         {
             if (!playerHealth.player_died)
@@ -488,9 +679,10 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         else
+        {
             return;
+        }
     }
-
     private void OnCollisionStay2D(Collision2D collision)
     {
         touchingWall = false;
@@ -510,7 +702,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
-
     private void OnCollisionExit2D(Collision2D collision)
     {
         touchingWall = false;
@@ -525,7 +716,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float theX = newSpeed * moveInput.x;
-        if (walkingIntoWall || !canMoveHorizontally)
+        if (walkingIntoWall || !canMoveHorizontally || anything_super_related)
         {
             theX = 0.0f;
         }
@@ -533,20 +724,37 @@ public class PlayerMovement : MonoBehaviour
         {
             theX *= -1;
         }
-        rb.linearVelocity = new Vector2(theX, rb.linearVelocity.y);
 
-        if (jumpPressed && jump_time > 0f)
+        if (dash_time <= 0)
+        {
+            rb.linearVelocity = new Vector2(theX, rb.linearVelocity.y);
+        }
+        else
+        {
+            bool dash_direction = sprite_render.flipX;
+            rb.linearVelocity = dash_direction ? new Vector2(-dashSpeed, 0) : new Vector2(dashSpeed, 0);
+            endDash();
+        }
+
+        if (dash_cooldown > 0 && touched_ground_since_dash)
+        {
+            dash_cooldown -= Time.fixedDeltaTime;
+        }
+
+        if (jumpPressed && jump_time > 0f && !anything_super_related)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jump_time -= Time.fixedDeltaTime; // subtract time passed this, with fixed update
         }
 
         if (down_jump_time > 0.0f)
+        {
             down_jump_time -= Time.fixedDeltaTime;
+        }
         else if (down_jump_time < 0.0f)
+        {
             down_jump_time = 0.0f;
-
+        }
     }
-
 }
 

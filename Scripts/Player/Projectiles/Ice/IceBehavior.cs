@@ -17,22 +17,23 @@ public class IceBehavior : MonoBehaviour
     public bool reflected_first_time = false;
     public bool reflected = false;
     private GameObject owner;
+    private PlayerDamageAndHealth player_health;
 
     public LayerMask groundLayer;
     public LayerMask enemyLayer;
     public LayerMask playerLayer;
     public LayerMask active_layer;
     public LayerMask inactive_layer;
+
+    public bool hit_legit_target;
     void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
         reflectAttack = GetComponent<EnemyAttack>();
     }
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground","BreakableGround");
         enemyLayer = LayerMask.GetMask("Active_Enemy_Attack","Enemy");
@@ -41,19 +42,18 @@ public class IceBehavior : MonoBehaviour
         inactive_layer = LayerMask.NameToLayer("Inactive_Player_Attack");
         sprite = GetComponent<SpriteRenderer>();
         col = GetComponent<BoxCollider2D>();
-
     }
-    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator)
+    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator, PlayerDamageAndHealth helf)
     {
         speed = moveSpeed;
         rotation = zRotation;
         life = lifetime;
         owner = creator;
+        player_health = helf;
     }
     // Update is called once per frame
     private void Update()
     {
-
         if (reflected)
         {
             if (!reflected_first_time)
@@ -68,7 +68,6 @@ public class IceBehavior : MonoBehaviour
         {
             sprite.flipX = true;
         }
-
         else
         {
             sprite.flipX = false;
@@ -94,6 +93,10 @@ public class IceBehavior : MonoBehaviour
         {
             if (!destroyed_first_time)
             {
+                if (playerAttack.wasHit && hit_legit_target)
+                {
+                    player_health.AddEnergy(Mathf.RoundToInt(playerAttack.damage * 0.8f));
+                }
                 destroyed_first_time = true;
                 GetComponentInChildren<IceTrailBehavior>().disableSprite();
                 playerAttack.DisableHitbox();
@@ -104,34 +107,27 @@ public class IceBehavior : MonoBehaviour
             rb.linearVelocityY = 0;
 
         }
-
         else
         {
             rb.linearVelocityX = Mathf.Cos(rotation * Mathf.Deg2Rad) * speed;
             rb.linearVelocityY = Mathf.Sin(rotation * Mathf.Deg2Rad) * speed;
         }
-
     }
-
     private void OnTriggerEnter2D(Collider2D col)
     {
-
         if (col.gameObject.CompareTag("Reflective") && ((1 << col.gameObject.layer) & enemyLayer) != 0)
         {
-            this.reflected = true;
+            reflected = true;
         }
-
         else if (((1 << col.gameObject.layer) & groundLayer) != 0)
         {
             playerAttack.DisableHitbox();
             playerAttack.destroyTimer = 0.5f;
             playerAttack.startDestroy();
         }
-
     }
     private void OnTriggerStay2D(Collider2D col)
     {
-
         if (gameObject.layer != active_layer) // If the layer this object is on is not the active attack layer return
         {
             return;
@@ -139,25 +135,30 @@ public class IceBehavior : MonoBehaviour
 
         if (!reflected)
         {
-
             if (((1 << col.gameObject.layer) & enemyLayer) != 0) // If the collision is hitting the enemy's damage hitbox layer
             {
                 EnemyDamageable attempt = col.gameObject.GetComponent<EnemyDamageable>();
-                if (attempt == null) {
+                if (attempt == null)
+                {
                     return;
                 }
                 else
                 {
-                    attempt.Hit(playerAttack);
-                }
-                
+                    if (player_health != null && player_health.health > 0)
+                    {
+                        hit_legit_target = true;
+                        attempt.Hit(playerAttack);
+                    }
+                    else
+                    {
+                        playerAttack.damage = 0;
+                        attempt.Hit(playerAttack);
+                    }
+                }   
             }
-
         }
-
         else
         {
-
             if (((1 << col.gameObject.layer) & playerLayer) != 0) // If the collision is hitting the player's damage hitbox layer
             {
                 col.gameObject.GetComponentInParent<PlayerDamageAndHealth>().Hit(this.col);

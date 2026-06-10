@@ -15,13 +15,13 @@ public class PlayerAttack : MonoBehaviour
     public float stunDuration = 0f;
     public float freezeDuration = 0f;
     public float burnDuration = 0f;
-    public float reverseDuration = 0f;
+    public float blindDuration = 0f;
+    /*public float reverseDuration = 0f;
     public float slowDuration = 0f;
     public float slowPotency = 0f;
-    public float blindDuration = 0f;
     public float weaknessDuration = 0f;
     public float weaknessPotency = 0f;
-    public float curseDuration = 0f;
+    public float curseDuration = 0f;*/
     public bool debuffEvenIfBlocked = false;
 
     public bool wasHit = false;
@@ -57,7 +57,6 @@ public class PlayerAttack : MonoBehaviour
     }
     public void isHit()
     {
-
         wasHit = true;
 
         if (destroyOnHit)
@@ -69,11 +68,9 @@ public class PlayerAttack : MonoBehaviour
         {
             DisableHitbox();
         }
-
     }
     public void isBlock()
     {
-
         wasBlock = true;
 
         if (destroyOnBlock)
@@ -85,7 +82,11 @@ public class PlayerAttack : MonoBehaviour
         {
             DisableHitbox();
         }
-
+    }
+    public void clearFlags()
+    {
+        wasBlock = false;
+        wasHit = false;
     }
     public void startDestroy()
     {

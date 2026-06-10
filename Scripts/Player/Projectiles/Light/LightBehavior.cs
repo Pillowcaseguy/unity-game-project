@@ -11,7 +11,6 @@ public class LightBehavior : MonoBehaviour
     public EnemyAttack reflectAttack;
     public float speed;
     public float rotation;
-    public float initial_rotation;
     public float life;
 
     private bool destroyed_first_time = false;
@@ -20,12 +19,15 @@ public class LightBehavior : MonoBehaviour
     public bool reflected_first_time = false;
     public bool reflected = false;
     private GameObject owner;
+    private PlayerDamageAndHealth player_health;
 
     public LayerMask groundLayer;
     public LayerMask enemyLayer;
     public LayerMask playerLayer;
     public LayerMask active_layer;
     public LayerMask inactive_layer;
+
+    public bool hit_legit_target;
     void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
@@ -43,13 +45,13 @@ public class LightBehavior : MonoBehaviour
         inactive_layer = LayerMask.NameToLayer("Inactive_Player_Attack");
         col = GetComponent<BoxCollider2D>();
     }
-    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator)
+    public void Initialize(float moveSpeed, float zRotation, float lifetime, GameObject creator, PlayerDamageAndHealth helf)
     {
         speed = moveSpeed;
         rotation = zRotation;
-        initial_rotation = zRotation;
         life = lifetime;
         owner = creator;
+        player_health = helf;
     }
     // Update is called once per frame
     private void Update()
@@ -95,10 +97,12 @@ public class LightBehavior : MonoBehaviour
         {
             if (!destroyed_first_time)
             {
+                if (playerAttack.wasHit && hit_legit_target)
+                {
+                    player_health.AddEnergy(Mathf.RoundToInt(playerAttack.damage * 0.8f));
+                }
                 destroyed_first_time = true;
                 do_the_destroy();
-                //main_sprite.transform.rotation = Quaternion.Euler(0, 0, rotation);
-                //transform.position = transform.position + transform.right * 0.25f;
             }
             rb.linearVelocityX = 0;
             rb.linearVelocityY = 0;
@@ -113,14 +117,11 @@ public class LightBehavior : MonoBehaviour
     {
         if (col.gameObject.CompareTag("Reflective") && ((1 << col.gameObject.layer) & enemyLayer) != 0)
         {
-            this.reflected = true;
+            reflected = true;
         }
 
         else if (((1 << col.gameObject.layer) & groundLayer) != 0)
         {
-            /*playerAttack.DisableHitbox();
-            playerAttack.destroyTimer = 0.0f;
-            playerAttack.startDestroy();*/
             do_the_destroy();
         }
     }
@@ -142,7 +143,16 @@ public class LightBehavior : MonoBehaviour
                 }
                 else
                 {
-                    attempt.Hit(playerAttack);
+                    if (player_health != null && player_health.health > 0)
+                    {
+                        hit_legit_target = true;
+                        attempt.Hit(playerAttack);
+                    }
+                    else
+                    {
+                        playerAttack.damage = 0;
+                        attempt.Hit(playerAttack);
+                    }
                 }
             }
         }

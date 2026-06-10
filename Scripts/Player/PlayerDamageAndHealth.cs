@@ -7,7 +7,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     private Animator ani;
     private SpriteRenderer sprite_render;
     private CameraShake cameraShake;
-    private PlayerMovement movement;
+    public PlayerMovement movement;
     public PlayerAttacking player_attacking;
 
     public int maximum_health = 8;
@@ -15,7 +15,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public float hurtTime = 0f;
     public float parryTime = 0f;
     public float parryCooldown = 0f;
-    public float maxParryCooldown = 10f;
+    public float maxParryCooldown = 15f;
     public float weaponSwitchCooldown = 0f;
     public float invincibilityTime = 0f;
     private float hiddenInvincibilityTime = 0f;
@@ -97,6 +97,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
             hiddenInvincibilityTime = 0f;
             hurtTime = 0f;
             parryTime = 0f;
+            rb.bodyType = RigidbodyType2D.Dynamic;
             player_died = true;
         }
 
@@ -132,6 +133,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             hurtTime -= dt;
             parryTime = 0;
+            movement.endDash(true);
             if (hurtTime < 0f) { hurtTime = 0f; }
         }
 
@@ -146,13 +148,13 @@ public class PlayerDamageAndHealth : MonoBehaviour
         //Debug.Log(health + " health remaining!");
 
         ani.SetBool("isHurt", hurtTime > 0f);
-
+        ani.SetInteger("weaponType", (int) player_attacking.currentWeapon);
     }
 
     public void Hit_No_Collider(GameObject thing_that_smacked_me)
     {
 
-        if (player_died || trueInvincibilityTime > 0f)
+        if (player_died)
         {
             return;
         }
@@ -170,12 +172,16 @@ public class PlayerDamageAndHealth : MonoBehaviour
         if (trueInvincibilityTime > 0f) // Unconditional blocking of the attack
         {
             Block(attack);
+            return;
         }
 
         else if (!attack.cannotBeParried && parryTime > 0f && (invincibilityTime + trueInvincibilityTime) == 0f) // Cannot be invincible to parry
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
             parryTime = 0f;
+            var attempt = thing_that_smacked_me.GetComponent<PlayerAttack>();
+            if (attempt == null) // Parrying your own attack is stupid
+                AddEnergy(50);
             Parry(attack);
         }
 
@@ -183,6 +189,9 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
             parryTime = 0f;
+            var attempt = thing_that_smacked_me.GetComponent<PlayerAttack>();
+            if (attempt == null) // Parrying your own attack is stupid
+                AddEnergy(50);
             Parry(attack);
         }
 
@@ -206,7 +215,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public void Hit(Collider2D col)
     {
 
-        if (player_died || trueInvincibilityTime > 0f || col == null)
+        if (player_died || col == null)
         {
             return;
         }
@@ -223,12 +232,16 @@ public class PlayerDamageAndHealth : MonoBehaviour
         if (trueInvincibilityTime > 0f) // Unconditional blocking of the attack
         {
             Block(attack);
+            return;
         }
 
         else if (!attack.cannotBeParried && parryTime > 0f && (invincibilityTime + trueInvincibilityTime) == 0f) // Cannot be invincible to parry
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
             parryTime = 0f;
+            var attempt = col.GetComponent<PlayerAttack>();
+            if (attempt == null) // Parrying your own attack is stupid
+                AddEnergy(50);
             Parry(attack);
         }
 
@@ -236,6 +249,9 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
             parryTime = 0f;
+            var attempt = col.GetComponent<PlayerAttack>();
+            if (attempt == null) // Parrying your own attack is stupid
+                AddEnergy(50);
             Parry(attack);
         }
 
@@ -279,7 +295,8 @@ public class PlayerDamageAndHealth : MonoBehaviour
             {
                 Debug.Log("YOU FORGOT YOUR SHAKE!");
             }
-            invincibilityTime = 2.0f;
+            //invincibilityTime = (invincibilityTime > 2.0f) ? invincibilityTime : 2.0f;
+            add_invincibility_time(2);
             hiddenInvincibilityTime = 0.2f;
             Damage(hurtAmount, attack.attackType);
         }
@@ -306,7 +323,8 @@ public class PlayerDamageAndHealth : MonoBehaviour
             {
                 Debug.Log("YOU FORGOT YOUR SHAKE!");
             }
-            invincibilityTime = 2.0f;
+            //invincibilityTime = (invincibilityTime > 2.0f) ? invincibilityTime : 2.0f;
+            add_invincibility_time(2);
             hiddenInvincibilityTime = 0.2f;
         }
 
@@ -316,14 +334,12 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             health = 0;
         }
-
         else
         {
             health -= hurtAmount;
         }
 
         lastHitType = type;
-
     }
     public void Heal(int healAmount)
     {
@@ -341,9 +357,39 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             health += healAmount;
         }
-
     }
+    public void AddEnergy(int energy)
+    {
+        if (player_died) // Can't charge if dead
+        {
+            return;
+        }
 
+        if (movement.super_energy + energy > movement.super_energy_maximum)
+        {
+            movement.super_energy = movement.super_energy_maximum;
+        }
+        else
+        {
+            movement.super_energy += energy;
+        }
+    }
+    public void RemoveEnergy(int energy)
+    {
+        if (player_died) // Can't remove if dead
+        {
+            return;
+        }
+
+        if (movement.super_energy - energy < 0)
+        {
+            movement.super_energy = 0;
+        }
+        else
+        {
+            movement.super_energy -= energy;
+        }
+    }
     private void Parry(EnemyAttack attack) // Attack is parried
     {
         attack.isParried();
@@ -437,10 +483,11 @@ public class PlayerDamageAndHealth : MonoBehaviour
     {
         attack.isBlocked();
     }
-    public void initialize(int max_health, int current_health, PlayerAttacking.WeaponType primary_weapon, PlayerAttacking.WeaponType secondary_weapon)
+    public void initialize(int max_health, int current_health, PlayerAttacking.WeaponType primary_weapon, PlayerAttacking.WeaponType secondary_weapon, int energy = 0)
     {
         maximum_health = max_health;
         health = current_health;
+        movement.super_energy = energy;
         player_attacking.currentWeapon = primary_weapon;
         player_attacking.lastWeapon = secondary_weapon;
         if (player_attacking.currentWeapon == player_attacking.lastWeapon)
@@ -565,6 +612,14 @@ public class PlayerDamageAndHealth : MonoBehaviour
         }
 
     }
+    public void add_invincibility_time(float f)
+    {
+        invincibilityTime = (f > invincibilityTime) ? f : invincibilityTime;
+    }
+    public void add_true_invincibility_time(float f)
+    {
+        trueInvincibilityTime = (f > trueInvincibilityTime) ? f : trueInvincibilityTime;
+    }
     private void OnCollisionEnter2D(Collision2D collision) // Check for pits
     {
         if (((1 << collision.gameObject.layer) & pitLayer) != 0)
@@ -575,7 +630,8 @@ public class PlayerDamageAndHealth : MonoBehaviour
             }
         }
 
-        else {
+        else
+        {
             return;
         }
     }

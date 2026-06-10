@@ -75,6 +75,7 @@ public class FireBehavior : MonoBehaviour
 
         transform.position = firingPoint.transform.position;
         transform.rotation = firingPoint.transform.rotation;
+        playerAttack.damage = 5;
 
         origin = transform.position;
         direction = transform.right;
@@ -112,7 +113,7 @@ public class FireBehavior : MonoBehaviour
 
         if (player_health.weaknessTime > 0)
         {
-            playerAttack.damage = Mathf.CeilToInt(playerAttack.damage * (1 - player_health.weaknessPotency));
+            playerAttack.damage = Mathf.RoundToInt(playerAttack.damage * (1 - player_health.weaknessPotency));
         }
         else
         {
@@ -142,7 +143,6 @@ public class FireBehavior : MonoBehaviour
                 reflectedFireBehavior.renderSprite(true);
             }
         }
-
         else
         {
             reflectedFireBehavior.renderSprite(false);
@@ -150,6 +150,7 @@ public class FireBehavior : MonoBehaviour
             if (playerAtking.weaponCooldown == 0f)
             {
                 playerAtking.fireAttacked();
+                playerAttack.clearFlags();
                 EnemyDamageable burn_thanks;
                 if (winner.collider != null)
                 {
@@ -157,6 +158,10 @@ public class FireBehavior : MonoBehaviour
                     if (burn_thanks != null)
                     {
                         burn_thanks.Hit(playerAttack);
+                        if (!playerAttack.wasBlock && playerAttack.wasHit)
+                        {
+                            player_health.AddEnergy(Mathf.RoundToInt(playerAttack.damage * 0.8f));
+                        }
                     }
                 }
             }
@@ -167,6 +172,5 @@ public class FireBehavior : MonoBehaviour
             playerAtking.fireDeactivated();
             Destroy(gameObject);
         }
-
     }
 }
