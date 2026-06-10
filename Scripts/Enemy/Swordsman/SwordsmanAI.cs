@@ -1,7 +1,6 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class SwordsmanAI : MonoBehaviour,EnemyDamageable
+public class SwordsmanAI : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
 
     public bool isStanding = false;
@@ -119,7 +118,6 @@ public class SwordsmanAI : MonoBehaviour,EnemyDamageable
             sprite.color = new Color(1, 1, 1, 0.5f);
         }
     }
-
     public void Hit(PlayerAttack player_attack)
     {
         player_attack.isHit();

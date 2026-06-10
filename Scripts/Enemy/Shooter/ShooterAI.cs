@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ShooterAI : MonoBehaviour, EnemyDamageable
+public class ShooterAI : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public bool isStanding = false;

@@ -6,8 +6,8 @@ public class SwordSlashAttack : MonoBehaviour
     private BoxCollider2D col;
     private GameObject parentObj;
     private SwordsmanAI myAI;
-    private float rotLowerLimit = 45f;
-    private float rotHigherLimit = 135f;
+    //private float rotLowerLimit = 45f;
+    //private float rotHigherLimit = 135f;
 
     private EnemyAttack attackControl;
 

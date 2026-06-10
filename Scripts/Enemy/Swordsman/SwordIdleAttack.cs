@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SwordIdleAttack : MonoBehaviour,EnemyDamageable
+public class SwordIdleAttack : MonoBehaviour, EnemyDamageable
 {
 
     private BoxCollider2D col;
@@ -11,7 +11,7 @@ public class SwordIdleAttack : MonoBehaviour,EnemyDamageable
 
     public void Hit(PlayerAttack player_attack)
     {
-        player_attack.isHit();
+        player_attack.isBlock();
     }
 
     public void TakeDamage(int damage)
