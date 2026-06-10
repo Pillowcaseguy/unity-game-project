@@ -1,4 +1,3 @@
-using NUnit.Framework.Constraints;
 using UnityEngine;
 
 public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyImplement
@@ -146,7 +145,7 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         raising_spike_cooldown = Random.Range(5f, 10f);
         sword_slash_cooldown = Random.Range(5f, 10f);
         blocking_cooldown = 15f;
-        air_attack_cooldown = Random.Range(2f, 6f);
+        air_attack_cooldown = 2f;
         ground_attack_cooldown = Random.Range(2f, 6f);
         map_wide_attack_cooldown = 20f;
         throwing_snowball_cooldown = Random.Range(2f, 6f);
@@ -198,7 +197,7 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
 
         inability_time = stun_time_phase_1 + blind_time + freeze_time;
 
-        can_flip = !(is_attacking || ani.GetBool("phase_change") || inability_time > 0 || is_dead);
+        can_flip = !(is_attacking || ani.GetBool("phase_change") || inability_time > 0 || is_dead) || ani.GetBool("dashing_with_sword");
 
         if (can_flip_once)
         {
@@ -335,11 +334,14 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
             }
         }
 
-        if (phase == 0 && ani.GetBool("dashing_with_sword") && player_in_sword_range)
+        if (phase == 0 && ani.GetBool("dashing_with_sword"))
         {
-            stop_dash();
-            ani.SetBool("slashing_sword", true);
-            ani.SetBool("dashing_with_sword", false);
+            if (player_in_sword_range)
+            {
+                stop_dash();
+                ani.SetBool("slashing_sword", true);
+                ani.SetBool("dashing_with_sword", false);
+            }
         }
 
         if (phase == 0)
@@ -541,7 +543,6 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
     }
     public void end_attack()
     {
-        //Debug.Log("this ran");
         float preset_all_attacks = 0f;
         can_flip_once = false;
 
@@ -552,6 +553,10 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         ani.SetBool("slashing_sword", false);
         ani.SetBool("making_sword", false);
         ani.SetBool("dashing_with_sword", false);
+        for (int x = 0; x < 6; x++)
+        {
+            swordy.deactivate_hitbox(x);
+        }
         stop_dash();
         ani.SetBool("creating_ice_spike", false);
         ani.SetBool("creating_many_ice_spikes", false);
@@ -717,6 +722,10 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
     public void block_started_hitting()
     {
         ani.SetBool("hit_while_blocking", true);
+        if (flip_cooldown < 0.5f)
+        {
+            flip_everything();
+        }
     }
     public void block_finished_hitting()
     {
@@ -800,7 +809,6 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         fireball_cooldown = Random.Range(2f, 6f);
         fire_background_cooldown = 4f;
         fire_wall_cooldown = 10f;
-
     }
     public void stun_me(float f)
     {
@@ -1022,7 +1030,7 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
             }
             else if (dash_cooldown <= 0f)
             {
-                dash_cooldown = Random.Range(25f, 30f);
+                dash_cooldown = Random.Range(30f, 35f);
                 ani.SetBool("is_dashing", true);
                 made_a_move = true;
             }
@@ -1157,9 +1165,9 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         fire_wall_left = Instantiate(fire_wall, new Vector2(-9, 0.6f), Quaternion.Euler(0,0,0)).GetComponent<TestBoss4FirewallBehavior>();
         fire_wall_right = Instantiate(fire_wall, new Vector2(9, 0.6f), Quaternion.Euler(0,0,0)).GetComponent<TestBoss4FirewallBehavior>();
 
-        fire_wall_left.initialize(30, level_manager_behavior.player, true);
+        fire_wall_left.initialize(40, level_manager_behavior.player, true);
 
-        fire_wall_right.initialize(30, level_manager_behavior.player, false);
+        fire_wall_right.initialize(40, level_manager_behavior.player, false);
         fire_wall_right.sprite.flipX = true;
     }
 
@@ -1336,9 +1344,13 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
             player_attack.isHit();
             if (burn_time > 0)
             {
-                player_attack.damage = Mathf.CeilToInt(player_attack.damage * 1.2f);
+                player_attack.damage = Mathf.RoundToInt(player_attack.damage * 1.2f);
             }
             TakeDamage(player_attack.damage);
+            /*if (burn_time > 0)
+            {
+                player_attack.damage = Mathf.RoundToInt(player_attack.damage / 1.2f);
+            }*/
 
             if (phase == 0)
             {
