@@ -9,6 +9,7 @@ public class MainMenuBehavior : MonoBehaviour
     public Button level_2;
     public Button level_3;
     public Button level_4;
+    public Button level_5;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,6 +18,7 @@ public class MainMenuBehavior : MonoBehaviour
         level_2.onClick.AddListener(() => load_level("TestBoss2"));
         level_3.onClick.AddListener(() => load_level("TestBoss3"));
         level_4.onClick.AddListener(() => load_level("TestBoss4"));
+        level_5.onClick.AddListener(() => load_level("TestBoss5"));
     }
     public void load_level(string level)
     {
