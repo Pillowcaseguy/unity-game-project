@@ -295,6 +295,11 @@ public class PlayerAttacking : MonoBehaviour
     }
     public void super_attack_ice()
     {
+        if (playerHealth.current_burn)
+        {
+            Destroy(playerHealth.current_burn);
+            playerHealth.burnTime = 0;
+        }
         GameObject iceBG = Instantiate(Resources.Load<GameObject>("Player_Weapons/Super/IceBackground"), transform.position, Quaternion.Euler(0,0,0));
         Destroy(iceBG, 0.2f);
         CameraShake attempt = Camera.main.GetComponent<CameraShake>();
@@ -446,11 +451,11 @@ public class PlayerAttacking : MonoBehaviour
                 current_gem_shield_behavior.lifetime = 1;
             }
 
-            playerHealth.add_invincibility_time(8f);
+            playerHealth.add_invincibility_time(9f);
             current_gem_shield = Instantiate(Resources.Load<GameObject>("Player_Status_Effects/gem_shield"), transform.position, Quaternion.Euler(0, 0, 0));
 
             current_gem_shield_behavior = current_gem_shield.GetComponent<GemShieldBehavior>();
-            current_gem_shield_behavior.initialize(8f, gameObject);
+            current_gem_shield_behavior.initialize(9f, gameObject);
         }
 
         playerMovement.ani.SetBool("failed_light", false);

@@ -1,10 +1,8 @@
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
-
     public float moveSpeed = 5f;
     public float jumpForce = 5f;
     public float dashSpeed = 10f;
@@ -42,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
     public bool dashing = false;
     public float dash_time = 0f;
     public float dash_cooldown = 0f;
-    public float set_dash_cooldown = 1f;
+    public float set_dash_cooldown = 2f;
     public bool touched_ground_since_dash = false;
 
     public int super_energy;
@@ -77,9 +75,9 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector2 attemptedMove;
 
-    private float height;
-    private float width;
-    private float half_width;
+    public float height;
+    public float width;
+    public float half_width;
     private Vector2 left;
     private Vector2 right;
 
@@ -324,10 +322,10 @@ public class PlayerMovement : MonoBehaviour
             ani.runtimeAnimatorController = original_controller;
             canMoveHorizontally = true;
             canMoveVertically = true;
-            canAttack = true;
-            canUseSkills = true;
-            canDash = true;
-            canSuperAttack = true;
+            canAttack = sprite_render.enabled;
+            canUseSkills = sprite_render.enabled;
+            canDash = sprite_render.enabled;
+            canSuperAttack = sprite_render.enabled;
         }
 
         if (playerHealth.player_died)
@@ -504,6 +502,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (context.started)
         {
+            Time.timeScale = 1.0f;
             SceneManager.LoadScene("Main Menu");
         }
     }
@@ -627,8 +626,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            playerHealth.parryTime = 0.5f;
-            playerHealth.parryCooldown = playerHealth.maxParryCooldown;
+            playerHealth.parryTime = playerHealth.maxParryTime;
+            playerHealth.parryCooldown = playerHealth.maxParryCooldown / 2f + playerHealth.maxParryTime;
         }
     }
     private void player_died()

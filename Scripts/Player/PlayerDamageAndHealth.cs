@@ -16,6 +16,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public float parryTime = 0f;
     public float parryCooldown = 0f;
     public float maxParryCooldown = 15f;
+    public float maxParryTime = 0.5f;
     public float weaponSwitchCooldown = 0f;
     public float invincibilityTime = 0f;
     private float hiddenInvincibilityTime = 0f;
@@ -59,14 +60,28 @@ public class PlayerDamageAndHealth : MonoBehaviour
     public GameObject current_slowness;
     public GameObject slowness_effect;
 
+    public GameObject guardbreak_effect;
+
     public LayerMask pitLayer;
     void Awake()
     {
         movement = GetComponent<PlayerMovement>();
         player_attacking = GetComponent<PlayerAttacking>();
+        rb = GetComponent<Rigidbody2D>();
+        sprite_render = GetComponent<SpriteRenderer>();
+        col = GetComponent<BoxCollider2D>();
+        ani = GetComponent<Animator>();
+        burn_effect = Resources.Load<GameObject>("Player_Status_Effects/burning");
+        curse_effect = Resources.Load<GameObject>("Player_Status_Effects/curse");
+        stun_effect = Resources.Load<GameObject>("Player_Status_Effects/stun");
+        parry_effect = Resources.Load<GameObject>("Player_Status_Effects/parry");
+        reverse_effect = Resources.Load<GameObject>("Player_Status_Effects/reverse");
+        weakness_effect = Resources.Load<GameObject>("Player_Status_Effects/weakness");
+        slowness_effect = Resources.Load<GameObject>("Player_Status_Effects/slowness");
+        guardbreak_effect = Resources.Load<GameObject>("Player_Status_Effects/guard_break");
     }
 
-    void Start()
+    /*void Start()
     {
         //health = maximum_health;
         rb = GetComponent<Rigidbody2D>();
@@ -80,7 +95,8 @@ public class PlayerDamageAndHealth : MonoBehaviour
         reverse_effect = Resources.Load<GameObject>("Player_Status_Effects/reverse");
         weakness_effect = Resources.Load<GameObject>("Player_Status_Effects/weakness");
         slowness_effect = Resources.Load<GameObject>("Player_Status_Effects/slowness");
-    }
+        guardbreak_effect = Resources.Load<GameObject>("Player_Status_Effects/guard_break");
+    }*/
     // Update is called once per frame
     private void Update()
     {
@@ -165,7 +181,6 @@ public class PlayerDamageAndHealth : MonoBehaviour
         {
             attack = thing_that_smacked_me.GetComponentInParent<EnemyAttack>();
         }
-
         if (attack == null) // Who called a hit without an attack?
             return;
 
@@ -178,6 +193,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if (!attack.cannotBeParried && parryTime > 0f && (invincibilityTime + trueInvincibilityTime) == 0f) // Cannot be invincible to parry
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
+            parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
             parryTime = 0f;
             var attempt = thing_that_smacked_me.GetComponent<PlayerAttack>();
             if (attempt == null) // Parrying your own attack is stupid
@@ -188,6 +204,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if (!attack.cannotBeParried && parryTime > 0f && attack.ignoresInvincibility) // CAN parry attacks that hit through invincibility and can be parried
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
+            parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
             parryTime = 0f;
             var attempt = thing_that_smacked_me.GetComponent<PlayerAttack>();
             if (attempt == null) // Parrying your own attack is stupid
@@ -198,6 +215,10 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if ((attack.ignoresInvincibility || invincibilityTime == 0f) && hiddenInvincibilityTime == 0f) // Hidden invincibility prevents damage spam
         // But player can still get hurt when invincible + no hidden invincibility if attack ignores it
         {
+            if (parryTime > 0f) // If the check comes this far, the parry failed and thus it will penalize for screwing it up
+            {
+                parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
+            }
             Hurt(attack);
             Debuff(attack);
         }
@@ -238,6 +259,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if (!attack.cannotBeParried && parryTime > 0f && (invincibilityTime + trueInvincibilityTime) == 0f) // Cannot be invincible to parry
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
+            parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
             parryTime = 0f;
             var attempt = col.GetComponent<PlayerAttack>();
             if (attempt == null) // Parrying your own attack is stupid
@@ -248,6 +270,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if (!attack.cannotBeParried && parryTime > 0f && attack.ignoresInvincibility) // CAN parry attacks that hit through invincibility and can be parried
         {
             Instantiate(parry_effect, transform.position, transform.rotation);
+            parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
             parryTime = 0f;
             var attempt = col.GetComponent<PlayerAttack>();
             if (attempt == null) // Parrying your own attack is stupid
@@ -258,6 +281,10 @@ public class PlayerDamageAndHealth : MonoBehaviour
         else if ((attack.ignoresInvincibility || invincibilityTime == 0f) && hiddenInvincibilityTime == 0f) // Hidden invincibility prevents damage spam
         // But player can still get hurt when invincible + no hidden invincibility if attack ignores it
         {
+            if (parryTime > 0f) // If the check comes this far, the parry failed and thus it will penalize for screwing it up
+            {
+                parryCooldown = maxParryCooldown - (maxParryTime - parryTime);
+            }
             Hurt(attack);
             Debuff(attack);
         }
@@ -296,9 +323,22 @@ public class PlayerDamageAndHealth : MonoBehaviour
                 Debug.Log("YOU FORGOT YOUR SHAKE!");
             }
             //invincibilityTime = (invincibilityTime > 2.0f) ? invincibilityTime : 2.0f;
-            add_invincibility_time(2);
+            if (!attack.doesNotGrantInvulnerability && !attack.breaksInvulnerability)
+            {
+                add_invincibility_time(2);
+            }
             hiddenInvincibilityTime = 0.2f;
             Damage(hurtAmount, attack.attackType);
+        }
+
+        if (attack.breaksInvulnerability)
+        {
+            Instantiate(guardbreak_effect, new Vector2(transform.position.x, transform.position.y + movement.height / 2f + 1f), transform.rotation);
+            invincibilityTime = 0f;
+            if (player_attacking.current_gem_shield_behavior != null)
+            {
+                player_attacking.current_gem_shield_behavior.lifetime = 1f;
+            }
         }
 
         attack.isHit();
@@ -523,6 +563,13 @@ public class PlayerDamageAndHealth : MonoBehaviour
             stunTime -= dt;
             if (stunTime < 0f) { stunTime = 0f; }
         }
+        else
+        {
+            if (current_stun != null)
+            {
+                Destroy(current_stun);
+            }
+        }
 
         if (freezeTime > 0f)
         {
@@ -624,7 +671,7 @@ public class PlayerDamageAndHealth : MonoBehaviour
     {
         if (((1 << collision.gameObject.layer) & pitLayer) != 0)
         {
-            if (invincibilityTime == 0f)
+            if (invincibilityTime <= 0f)
             {
                 Damage(1, EnemyAttack.AttackType.Pit);
             }
