@@ -12,8 +12,6 @@ public class LevelManager_TestBoss4 : MonoBehaviour
     public PlayerDamageAndHealth player_life;
     public bool has_player;
 
-    public bool just_started = true;
-
     public bool level_loading;
 
     public GameObject spawn_point;
@@ -31,32 +29,8 @@ public class LevelManager_TestBoss4 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*if (boss == null)
-        {
-            TestBoss4Behavior b = FindAnyObjectByType<TestBoss4Behavior>();
-            if (b != null)
-            {
-                boss = b.gameObject;
-                boss_life = b;
-                b.level_manager = gameObject;
-                b.level_manager_behavior = this;
-                has_boss = true;
-            }
-        }*/
         has_boss = true;
 
-        /*if (player_life == null)
-        {
-            var attempt = GameObject.FindWithTag("Player");
-            
-            if (attempt != null)
-            {
-                GameManager.Instance.current_player = attempt;
-                player = attempt;
-                player_life = player.GetComponent<PlayerDamageAndHealth>();
-                has_player = true;
-            }
-        }*/
         if (start_color_changing)
         {
             float change = Time.unscaledDeltaTime / 5;
@@ -122,7 +96,7 @@ public class LevelManager_TestBoss4 : MonoBehaviour
         {
             if (boss_life.health <= 0)
             {
-                player_life.trueInvincibilityTime = 1f;
+                player_life.add_true_invincibility_time(1);
                 if (!level_loading)
                 {
                     //GameManager.Instance.carryover_health = player_life.health;
