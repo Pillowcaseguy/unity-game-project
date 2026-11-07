@@ -9,12 +9,6 @@ public class TestBoss4BlockingAttacksHitbox : MonoBehaviour, EnemyDamageable, En
     {
         player_attack_layer = LayerMask.GetMask("Active_Player_Attack");
     }
-
-    // Update is called once per frame
-    /*void Update()
-    {
-        
-    }*/
     public void Hit(PlayerAttack player_attack)
     {
         if (the_boss.is_blocking && the_boss.phase == 0)
@@ -28,6 +22,7 @@ public class TestBoss4BlockingAttacksHitbox : MonoBehaviour, EnemyDamageable, En
             }
             else
             {
+                the_boss.TakeDamage(0);
                 the_boss.block_started_hitting();
                 player_attack.isBlock();
             }
