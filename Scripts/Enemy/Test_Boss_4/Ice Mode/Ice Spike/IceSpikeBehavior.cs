@@ -39,8 +39,12 @@ public class IceSpikeBehavior : MonoBehaviour
                 float x_force = 0;
                 if (can_fling_player)
                 {
-                    col.gameObject.transform.parent.position = new Vector2(col.gameObject.transform.parent.position.x, transform.position.y + 3f);
-                    attempt.AddForce(new Vector2(x_force, 400));
+                    var hi = col.gameObject.GetComponentInParent<PlayerDamageAndHealth>();
+                    if (hi != null && !hi.movement.ani.GetBool("dead_step_2"))
+                    {
+                        col.gameObject.transform.parent.position = new Vector2(col.gameObject.transform.parent.position.x, transform.position.y + 3f);
+                        attempt.AddForce(new Vector2(x_force, 400));
+                    }
                 }
                 attack_hit = true;
             }
