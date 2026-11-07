@@ -6,8 +6,8 @@ public class EnemyAttack : MonoBehaviour
     public Animator ani;
     private SpriteRenderer sprite_render;
 
-    private int active_layer;
-    private int inactive_layer;
+    public int active_layer;
+    public int inactive_layer;
 
     public bool ignoresInvincibility = false;
     public bool cannotBeParried = false;
@@ -34,14 +34,15 @@ public class EnemyAttack : MonoBehaviour
     public bool parryDisablesAttack = false;
     public bool blockDisablesAttack = false;
     public bool hitDisablesAttack = false;
+    public bool doesNotGrantInvulnerability = false;
+    public bool breaksInvulnerability = false;
     public bool isDestroyed = false;
 
     public enum AttackType { Normal, Fire, Ice, Earth, Bullet, Pit }
     public AttackType attackType = AttackType.Normal;
     public LayerMask playerLayer;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         col = GetComponent<BoxCollider2D>();
         ani = GetComponent<Animator>();
@@ -104,7 +105,6 @@ public class EnemyAttack : MonoBehaviour
     }
     public void isHit()
     {
-
         wasHit = true;
 
         if (destroyOnHit)
@@ -117,7 +117,6 @@ public class EnemyAttack : MonoBehaviour
             DisableHitbox();
             disableAttackCycle = true;
         }
-
     }
     public void EnableHitbox()
     {
@@ -145,5 +144,8 @@ public class EnemyAttack : MonoBehaviour
         wasBlocked = false;
         wasHit = false;
     }
-
+    public bool anyFlag()
+    {
+        return (wasParried || wasBlocked || wasHit);
+    }
 }
