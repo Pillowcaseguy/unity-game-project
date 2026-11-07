@@ -75,6 +75,6 @@ public class SpikesBehavior_P3 : MonoBehaviour,EnemyDamageable
 
     public void Hit(PlayerAttack player_attack)
     {
-        player_attack.isHit();
+        player_attack.isBlock();
     }
 }
