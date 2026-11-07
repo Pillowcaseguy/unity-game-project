@@ -131,6 +131,9 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
 
     public GameObject middle_fireball;
     public int fireball_patterns_shot;
+
+    public GameObject damage_number_spawn_point;
+    public GameObject Damage_Numbers;
     void Start()
     {
         ani = GetComponent<Animator>();
@@ -197,7 +200,7 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
 
         inability_time = stun_time_phase_1 + blind_time + freeze_time;
 
-        can_flip = !(is_attacking || ani.GetBool("phase_change") || inability_time > 0 || is_dead) || ani.GetBool("dashing_with_sword");
+        can_flip = !(is_attacking || ani.GetBool("phase_change") || inability_time > 0 || is_dead) || ani.GetBool("dashing_with_sword") || ani.GetBool("is_reflecting") || ani.GetBool("is_diving");
 
         if (can_flip_once)
         {
@@ -243,8 +246,6 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
             {
                 Destroy(current_stun);
             }
-            blind_time = 0;
-            freeze_time = 0;
             phase_change();
         }
 
@@ -286,7 +287,14 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
 
         if (blind_time > 0)
         {
-            if (just_blinded)
+            if (ani.GetBool("phase_change"))
+            {
+                blind_time = 0;
+                ani.SetBool("is_blinded", false);
+                ani.SetBool("is_blinded_first_time", false);
+                just_blinded = true;
+            }
+            else if (just_blinded)
             {
                 stop_blocking_attacks();
                 just_blinded = false;
@@ -784,6 +792,7 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         is_invincible = true;
         ani.SetBool("phase_change", true);
         ani.SetInteger("phase", phase);
+        sword_detection_hitbox.size = new Vector2(1, sword_detection_hitbox.size.y);
         end_attack();
     }
     public void start_changing_colors()
@@ -795,6 +804,8 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         ani.SetBool("phase_change", false);
         end_attack();
         box.enabled = true;
+        blind_time = 0;
+        freeze_time = 0;
 
         last_spikes_was_multiple = true;
         raising_spike_cooldown = Random.Range(5f, 10f);
@@ -1007,13 +1018,6 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
                 ani.SetBool("creating_meteors", true);
                 made_a_move = true;
             }
-            else if (fire_background_cooldown <= 0f)
-            {
-                fire_background_cooldown = Random.Range(25f, 30f);
-                ani.SetBool("fire_background_attacking", true);
-                can_flip_once = true;
-                made_a_move = true;
-            }
             else if (jump_cooldown <= 0f)
             {
                 jump_cooldown = Random.Range(25f, 30f);
@@ -1026,6 +1030,13 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
                 melee_cooldown = 15f;
                 can_flip_once = true;
                 ani.SetBool("is_melee_attacking", true);
+                made_a_move = true;
+            }
+            else if (fire_background_cooldown <= 0f)
+            {
+                fire_background_cooldown = Random.Range(25f, 30f);
+                ani.SetBool("fire_background_attacking", true);
+                can_flip_once = true;
                 made_a_move = true;
             }
             else if (dash_cooldown <= 0f)
@@ -1326,17 +1337,23 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
     {
         if (is_dead)
         {
+            //var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            //hi.initialize(0);
             return;
         }
 
         if (is_invincible)
         {
             player_attack.isBlock();
+            var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            hi.initialize(0);
             return;
         }
         if (is_blocking)
         {
             ani.SetBool("hit_while_blocking", true);
+            var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            hi.initialize(0);
             return;
         }
         else
@@ -1378,13 +1395,17 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
     }
     public void TakeDamage(int damage)
     {
-        if (is_dead)
+        if (is_dead || !box.enabled || is_invincible || damage == 0)
         {
+            var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            hi.initialize(0);
             return;
         }
 
         if (phase == 0 && health - damage <= starting_health / 2)
         {
+            var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            hi.initialize(health - starting_health / 2);
             health = starting_health / 2;
             end_attack();
             phase_change_queued = true;
@@ -1393,6 +1414,8 @@ public class TestBoss4Behavior : MonoBehaviour, EnemyDamageable, EnemyMainBodyIm
         else
         {
             health -= damage;
+            var hi = Instantiate(Damage_Numbers, damage_number_spawn_point.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<DamageNumbersBehavior>();
+            hi.initialize(damage);
             if (health <= 0)
             {
                 health = 0;
