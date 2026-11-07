@@ -35,15 +35,20 @@ public class PlayerUI : MonoBehaviour
     public Sprite x_eye;
     public Sprite frozen_eye;
     public Sprite slow_eye;
+    public Sprite dizzy_eye_1;
+    public Sprite dizzy_eye_2;
 
     public Sprite happy_mouth;
     public Sprite slightly_happy_mouth;
     public Sprite neutral_mouth;
     public Sprite sad_mouth;
     public Sprite very_sad_mouth;
+    public Sprite dizzy_mouth;
 
     public Sprite normal_head;
     public Sprite cursed_head;
+
+    public Image portrait_bandage;
 
     public Sprite weapon_ice;
     public Sprite weapon_fire;
@@ -122,6 +127,15 @@ public class PlayerUI : MonoBehaviour
             fire_in_portrait.SetActive(false);
         }
 
+        if (health_ratio <= 0.2)
+        {
+            portrait_bandage.enabled = true;
+        }
+        else
+        {
+            portrait_bandage.enabled = false;
+        }
+
         bg_bar.color = final_bg_bar;
         bg_sq.color = final_bg_sq;
         head.sprite = final_head;
@@ -197,6 +211,11 @@ public class PlayerUI : MonoBehaviour
             return white_eye;
         }
 
+        if (h.reverseTime > 0)
+        {
+            return slow_eye;
+        }
+
         if (h.freezeTime > 0)
         {
             return frozen_eye;
@@ -238,6 +257,16 @@ public class PlayerUI : MonoBehaviour
             return white_eye;
         }
 
+        if (ratio <= 0.2)
+        {
+            return dizzy_eye_1;
+        }
+
+        if (h.reverseTime > 0)
+        {
+            return dizzy_eye_2;
+        }
+
         if (h.freezeTime > 0)
         {
             return frozen_eye;
@@ -273,10 +302,15 @@ public class PlayerUI : MonoBehaviour
             return very_sad_mouth;
         }
 
-        if (ratio <= 0.15)
+        if (h.reverseTime > 0)
+        {
+            return dizzy_mouth;
+        }
+
+        /*if (ratio <= 0.15)
         {
             return very_sad_mouth;
-        }
+        }*/
 
         if (h.stunTime > 0 || h.curseTime > 0 || h.blindTime > 0 || h.freezeTime > 0)
         {
