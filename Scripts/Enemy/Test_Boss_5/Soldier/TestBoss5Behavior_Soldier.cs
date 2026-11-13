@@ -416,13 +416,6 @@ public class TestBoss5Behavior_Soldier : MonoBehaviour, EnemyDamageable, EnemyMa
                     }
                     else
                     {
-                        if (!manager.first_low_charge)
-                        {
-                            manager.first_low_charge = true;
-                            var hi = Instantiate(manager.Burn_Tip_Text).GetComponent<Level5KnockoutText>();
-                            hi.text.text = "Crouch at the right time to avoid the charge!";
-                            hi.rect.position = new Vector2(-4.5f, 3f);
-                        }
                         is_attacking = true;
                         action_selected = true;
                         charge_cooldown = 25f;
@@ -437,13 +430,6 @@ public class TestBoss5Behavior_Soldier : MonoBehaviour, EnemyDamageable, EnemyMa
                 if (!(small_rng >= 0.5f && small_rng <= 0.64f)) // 15% chance to bypass attack
                 {
                     instant_flip_check();
-                    if (!manager.first_high_charge)
-                    {
-                        manager.first_high_charge = true;
-                        var hi = Instantiate(manager.Burn_Tip_Text).GetComponent<Level5KnockoutText>();
-                        hi.text.text = "Jump to avoid the charge!";
-                        hi.rect.position = new Vector2(-4.5f, 3f);
-                    }
                     is_attacking = true;
                     action_selected = true;
                     deadly_charge_cooldown = 22f;
@@ -553,7 +539,7 @@ public class TestBoss5Behavior_Soldier : MonoBehaviour, EnemyDamageable, EnemyMa
         {
             current_knocked_player.ani.SetBool("player_got_punched", true);
             player_punch_attack.attack_player();
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 25; i++)
             {
                 var particle = Instantiate(manager.hit_particle, manager.player.transform.position, Quaternion.Euler(0, 0, 0)).GetComponent<SpriteRenderer>();
                 particle.color = Color.white;
@@ -1135,6 +1121,26 @@ public class TestBoss5Behavior_Soldier : MonoBehaviour, EnemyDamageable, EnemyMa
         m6.speed = 25;
         m6.rotation = 50;
         m6.transform.position = m6.transform.position + m6.transform.up * 20;
+    }
+    public void check_first_charge()
+    {
+        if (!manager.first_low_charge)
+        {
+            manager.first_low_charge = true;
+            var hi = Instantiate(manager.Burn_Tip_Text).GetComponent<Level5KnockoutText>();
+            hi.text.text = "Crouch at the right time to avoid the charge!";
+            hi.rect.position = new Vector2(-4.5f, 3f);
+        }
+    }
+    public void check_first_deadly_charge()
+    {
+        if (!manager.first_high_charge)
+        {
+            manager.first_high_charge = true;
+            var hi = Instantiate(manager.Burn_Tip_Text).GetComponent<Level5KnockoutText>();
+            hi.text.text = "Jump to avoid the charge!";
+            hi.rect.position = new Vector2(-4.5f, 3f);
+        }
     }
     public void FixedUpdate()
     {
