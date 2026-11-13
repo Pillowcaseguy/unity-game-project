@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public class WizardLightSwordBehavior : MonoBehaviour, EnemyDamageable
 {
     public Rigidbody2D rb;
@@ -158,7 +157,7 @@ public class WizardLightSwordBehavior : MonoBehaviour, EnemyDamageable
             time_in_ground += Time.deltaTime;
             if (time_in_ground >= 5f)
             {
-                if (ani.GetBool("clatter_left") || ani.GetBool("clatter_right"))
+                if (time_in_ground >= 5.5f && (ani.GetBool("clatter_left") || ani.GetBool("clatter_right")))
                 {
                     if (spinning_left)
                         sprite.transform.rotation = Quaternion.Euler(0, 0, transform.rotation.eulerAngles.z - 15);
@@ -190,7 +189,7 @@ public class WizardLightSwordBehavior : MonoBehaviour, EnemyDamageable
                         return;
                     }
                 }
-                else
+                else if (!(ani.GetBool("clatter_left") || ani.GetBool("clatter_right")))
                 {
                     destroy_me();
                     return;
