@@ -16,7 +16,7 @@ This game is designed to be a boss rush game in the difficulty and style of Cuph
 - Solid enough controls, that all function as intended. You may still find a little weirdness, but generally when you click buttons they do what you want.
 
 # Five Levels! Woot!
-- This project was started around 9 months ago, in February 2026. It truly started a month ago, but I was stuck on the basics for a while. So, after that, things truly kicked off!
+- This project was started around 9 months ago, in February 2026. It truly started a month before that, but I was stuck on the basics for a while. So, after that, things truly kicked off!
 - ~~Yet somehow, it still looks terrible~~
 - I'll actually add sound now! And real UI!
 - If you actually want to play it (I recommend doing literally anything else) contact me somehow!
