@@ -137,7 +137,8 @@ public class TestBoss5Behavior_Ninja : MonoBehaviour, EnemyDamageable, EnemyMain
             burn_time = 0;
             if (current_burn)
             {
-                Destroy(current_burn);
+                current_burn.lifetime = 0f;
+                current_burn = null;
             }
             freeze_time = 0;
             end_attack();
