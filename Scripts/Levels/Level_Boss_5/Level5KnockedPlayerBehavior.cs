@@ -32,8 +32,11 @@ public class Level5KnockedPlayerBehavior : MonoBehaviour
         if (manager != null && manager.has_player)
         {
             manager.player.transform.position = gameObject.transform.position;
+            if (!manager.player_life.player_died)
+            {
+                lifetime -= Time.deltaTime;
+            }
         }
-        lifetime -= Time.deltaTime;
         if (lifetime <= 0)
         {
             destroy_self();

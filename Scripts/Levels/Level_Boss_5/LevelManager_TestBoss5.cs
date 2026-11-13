@@ -275,7 +275,7 @@ public class LevelManager_TestBoss5 : MonoBehaviour
             }
         }
 
-        if (player_life != null && (float)player_life.health / player_life.maximum_health <= 0.3f)
+        if (player_life != null && (float)player_life.health / player_life.maximum_health <= 0.35f)
         {
             tiny_heal -= Time.deltaTime;
         }
